@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d1117">
+<title>Автосервис Lite CRM — 80 000 ₽ разово, без подписки</title>
+<meta name="description" content="CRM для автосервиса: учёт клиентов, записей, финансов, Telegram-уведомления. Работает на телефоне, данные в облаке. Окупается за 2 месяца.">
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#0b0f15; --card:#161b22; --card2:#1b222c;
+    --border:#21262d; --text:#e6edf3; --muted:#9aa4af;
+    --accent:#e6a17a; --accent-2:#f0b894;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit; text-decoration:none;}
+  .wrap{max-width:1140px; margin:0 auto; padding:0 18px;}
+  .accent{color:var(--accent);}
+  .btn{
+    display:inline-flex; align-items:center; gap:.5rem; justify-content:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:#1a1208; font-weight:800; border:none; border-radius:14px;
+    padding:15px 28px; font-size:1.05rem; cursor:pointer; transition:transform .12s, filter .12s;
+    box-shadow:0 8px 24px rgba(230,161,122,.25);
+  }
+  .btn:hover{transform:translateY(-2px); filter:brightness(1.05);}
+  .btn-ghost{background:transparent; color:var(--text); border:1px solid var(--border); box-shadow:none; font-weight:700;}
+  .btn-ghost:hover{border-color:var(--accent);}
+  .section{padding:72px 0;}
+  .section h2{font-size:clamp(1.5rem,4vw,2.3rem); font-weight:800; margin-bottom:8px; letter-spacing:-.5px;}
+  .section .lead{color:var(--muted); font-size:1.05rem; margin-bottom:36px; max-width:680px;}
+  .eyebrow{display:inline-block; color:var(--accent); font-weight:700; letter-spacing:1px; text-transform:uppercase; font-size:.8rem; margin-bottom:14px;}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:18px; padding:24px;}
+
+  /* ===== Header ===== */
+  header{position:sticky; top:0; z-index:50; background:rgba(13,17,23,.82); backdrop-filter:blur(10px); border-bottom:1px solid var(--border);}
+  .nav{display:flex; align-items:center; justify-content:space-between; height:64px;}
+  .logo{display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.1rem;}
+  .logo .mark{width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2)); font-size:1.3rem;}
+  header .btn{padding:10px 18px; font-size:.95rem;}
+  .nav-cta-sm{display:none;}
+
+  /* ===== Hero ===== */
+  .hero{padding:64px 0 40px; position:relative; overflow:hidden;}
+  .hero::before{content:""; position:absolute; top:-160px; right:-120px; width:520px; height:520px;
+    background:radial-gradient(circle, rgba(230,161,122,.20), transparent 62%); pointer-events:none;}
+  .hero-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center;}
+  .badge{display:inline-flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border);
+    color:var(--muted); padding:7px 14px; border-radius:999px; font-size:.85rem; margin-bottom:22px;}
+  .hero h1{font-size:clamp(2rem,5.2vw,3.3rem); line-height:1.1; font-weight:800; letter-spacing:-1px; margin-bottom:18px;}
+  .hero p.sub{font-size:clamp(1.05rem,2.4vw,1.25rem); color:var(--muted); margin-bottom:30px; max-width:560px;}
+  .hero-cta{display:flex; gap:14px; flex-wrap:wrap; align-items:center;}
+  .hero-note{margin-top:18px; color:var(--muted); font-size:.9rem; display:flex; gap:18px; flex-wrap:wrap;}
+  .hero-note span{display:inline-flex; gap:7px; align-items:center;}
+
+  /* Телефон-мокап */
+  .phone{justify-self:center; width:280px; max-width:80vw; border:10px solid #2a313c; border-radius:36px;
+    background:var(--bg2); padding:14px 12px; box-shadow:0 30px 60px rgba(0,0,0,.5); position:relative;}
+  .phone::before{content:""; position:absolute; top:14px; left:50%; transform:translateX(-50%); width:90px; height:6px; border-radius:6px; background:#2a313c;}
+  .scr{margin-top:14px;}
+  .scr .greet{font-weight:800; font-size:1.05rem;}
+  .scr .greet small{display:block; color:var(--muted); font-weight:400; font-size:.72rem;}
+  .stat-row{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0;}
+  .stat{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px;}
+  .stat b{font-size:1.25rem; display:block; color:var(--accent);}
+  .stat small{color:var(--muted); font-size:.66rem;}
+  .mini{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:9px 11px; margin-bottom:7px; font-size:.74rem; display:flex; justify-content:space-between; align-items:center;}
+  .pill{font-size:.6rem; background:#243b27; color:#7ee787; padding:2px 7px; border-radius:6px;}
+  .pill.warn{background:#3a3411; color:#ffd866;}
+
+  /* ===== Problems ===== */
+  .prob-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  .prob{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; text-align:center;}
+  .prob .ico{font-size:2.2rem; display:block; margin-bottom:10px;}
+  .prob b{font-size:1.02rem;}
+
+  /* ===== Features ===== */
+  .feat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  .feat{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; transition:border-color .12s, transform .12s;}
+  .feat:hover{border-color:var(--accent); transform:translateY(-3px);}
+  .feat .ico{font-size:1.8rem; display:block; margin-bottom:12px;}
+  .feat b{display:block; font-size:1.05rem; margin-bottom:6px;}
+  .feat span{color:var(--muted); font-size:.92rem;}
+
+  /* ===== Advantages ===== */
+  .adv-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:14px;}
+  .adv{background:linear-gradient(180deg,var(--card),var(--card2)); border:1px solid var(--border); border-radius:16px; padding:22px 18px; text-align:center;}
+  .adv .ico{font-size:2rem; display:block; margin-bottom:10px;}
+  .adv b{display:block; font-size:1rem; margin-bottom:4px;}
+  .adv span{color:var(--muted); font-size:.85rem;}
+
+  /* ===== ROI ===== */
+  .roi{background:linear-gradient(135deg,#1d242f,#161b22); border:1px solid var(--border); border-radius:22px; padding:40px;}
+  .roi-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; text-align:center; margin-top:8px;}
+  .roi .num{font-size:clamp(1.8rem,5vw,2.8rem); font-weight:800; color:var(--accent); line-height:1;}
+  .roi .lbl{color:var(--muted); margin-top:8px; font-size:.95rem;}
+  .roi .sep{font-size:2rem; color:var(--muted); align-self:center;}
+  .roi-concl{text-align:center; margin-top:26px; font-size:1.15rem; font-weight:700;}
+
+  /* ===== Контакты ===== */
+  .contact-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; max-width:860px; margin:0 auto;}
+  .contact{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:26px 20px; text-align:center;
+    display:block; transition:border-color .12s, transform .12s;}
+  .contact:hover{border-color:var(--accent); transform:translateY(-3px);}
+  .contact .ico{font-size:2.1rem; display:block; margin-bottom:10px;}
+  .contact b{display:block; font-size:1.05rem; margin-bottom:4px; color:var(--text);}
+  .contact span{color:var(--muted); font-size:.92rem; word-break:break-word;}
+  .contacts-cta{text-align:center; margin-top:30px;}
+
+  footer{border-top:1px solid var(--border); padding:30px 0; color:var(--muted); font-size:.88rem; text-align:center;}
+
+  /* ===== Адаптив ===== */
+  @media (max-width:900px){
+    .hero-grid{grid-template-columns:1fr; gap:30px;}
+    .phone{order:-1;}
+    .prob-grid{grid-template-columns:repeat(2,1fr);}
+    .feat-grid{grid-template-columns:repeat(2,1fr);}
+    .adv-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:600px){
+    .section{padding:52px 0;}
+    .nav-cta{display:none;} .nav-cta-sm{display:inline-flex;}
+    .prob-grid,.feat-grid,.adv-grid,.contact-grid{grid-template-columns:1fr;}
+    .roi{padding:26px 20px;}
+    .roi-grid{grid-template-columns:1fr;}
+    .roi .sep{transform:rotate(90deg);}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header>
+  <div class="wrap nav">
+    <div class="logo"><span class="mark">🚗</span> Автосервис <span class="accent">Lite</span></div>
+    <a href="#contacts" class="btn nav-cta">💬 Написать в MAX</a>
+    <a href="#contacts" class="btn nav-cta-sm">MAX</a>
+  </div>
+</header>
+
+<!-- ===== Hero ===== -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="badge">⭐ CRM для автосервиса — без программистов</span>
+      <h1>Автосервис Lite CRM — <span class="accent">80 000 ₽ разово</span>, без абонентской платы</h1>
+      <p class="sub">Учёт клиентов, записей, финансов и Telegram-уведомления. Работает на телефоне. Данные в облаке. Окупается за 2 месяца.</p>
+      <div class="hero-cta">
+        <a href="max://chat?uid=14047811" class="btn">💬 Написать в MAX</a>
+        <a href="#features" class="btn btn-ghost">Что внутри →</a>
+      </div>
+      <div class="hero-note">
+        <span>✅ Без подписок</span>
+        <span>📴 Работает офлайн</span>
+        <span>☁️ Данные в облаке</span>
+      </div>
+    </div>
+
+    <!-- Мокап телефона -->
+    <div class="phone" aria-hidden="true">
+      <div class="scr">
+        <div class="greet">Добрый день, мастер! 👋
+          <small>Сегодня · 4 записи</small>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><b>128</b><small>Клиентов</small></div>
+          <div class="stat"><b>4</b><small>Записей сегодня</small></div>
+          <div class="stat"><b>86 500 ₽</b><small>Выручка за месяц</small></div>
+          <div class="stat"><b>2</b><small>Напоминания ТО</small></div>
+        </div>
+        <div class="mini"><span>🛠 Иван П. · Toyota Camry</span><span class="pill">10:00</span></div>
+        <div class="mini"><span>🛠 Мария С. · Kia Rio</span><span class="pill">14:30</span></div>
+        <div class="mini"><span>⚠️ Lada Vesta — пора на ТО</span><span class="pill warn">−1 200 км</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Проблемы ===== -->
+<section class="section">
+  <div class="wrap">
+    <span class="eyebrow">Знакомо?</span>
+    <h2>Без системы автосервис теряет деньги каждый день</h2>
+    <p class="lead">Если хотя бы один пункт про вас — CRM окупится быстрее, чем вы думаете.</p>
+    <div class="prob-grid">
+      <div class="prob"><span class="ico">📞</span><b>Теряете заявки в WhatsApp?</b></div>
+      <div class="prob"><span class="ico">📅</span><b>Путаетесь в записи клиентов?</b></div>
+      <div class="prob"><span class="ico">💰</span><b>Не знаете реальную прибыль?</b></div>
+      <div class="prob"><span class="ico">⏰</span><b>Клиенты забывают о ТО?</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Возможности ===== -->
+<section class="section" id="features" style="background:var(--bg2);">
+  <div class="wrap">
+    <span class="eyebrow">Возможности</span>
+    <h2>Всё для работы автосервиса — в одном приложении</h2>
+    <p class="lead">Это реальные функции готовой CRM, а не обещания. Открыл на телефоне — и работаешь.</p>
+    <div class="feat-grid">
+      <div class="feat"><span class="ico">👥</span><b>Клиенты и автомобили</b><span>Авто привязаны к владельцу. Вся история под рукой — кто, на чём ездит и что делали.</span></div>
+      <div class="feat"><span class="ico">🧰</span><b>Запись с несколькими услугами</b><span>Несколько работ за один визит — сумма и общее время считаются автоматически.</span></div>
+      <div class="feat"><span class="ico">🏷️</span><b>Прайс-лист услуг</b><span>Выбрал услугу — цена и длительность подставились сами. Никаких калькуляторов.</span></div>
+      <div class="feat"><span class="ico">🔔</span><b>Напоминания о ТО по пробегу</b><span>CRM сама подскажет, кого пора звать на обслуживание — по интервалу замены масла и ТО.</span></div>
+      <div class="feat"><span class="ico">💬</span><b>Telegram-уведомления клиентам</b><span>Ссылка-приглашение: клиент жмёт «Старт» — и получает напоминания о записи, готовности авто и ТО.</span></div>
+      <div class="feat"><span class="ico">💰</span><b>Финансы</b><span>Доходы, расходы по категориям, зарплата мастеров (% от выручки) и чистая прибыль за день/неделю/месяц.</span></div>
+      <div class="feat"><span class="ico">📊</span><b>Отчёты и графики</b><span>Загрузка мастеров, топ-5 услуг, ABC-анализ клиентов и прогноз выручки на месяц.</span></div>
+      <div class="feat"><span class="ico">📁</span><b>Экспорт в Excel</b><span>Готовый отчёт со всеми листами выгружается в .xlsx в один клик.</span></div>
+      <div class="feat"><span class="ico">☁️</span><b>Облачное хранение (Supabase)</b><span>Данные синхронизируются между телефоном и компьютером и не теряются.</span></div>
+      <div class="feat"><span class="ico">📲</span><b>Установка на телефон (PWA)</b><span>Ставится как обычное приложение — иконка на экране, отдельное окно.</span></div>
+      <div class="feat"><span class="ico">📴</span><b>Работа офлайн</b><span>Нет интернета? CRM работает на устройстве и синхронизируется, как только связь вернётся.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Преимущества ===== -->
+<section class="section">
+  <div class="wrap">
+    <span class="eyebrow">Почему берут</span>
+    <h2>Честная цена и быстрый результат</h2>
+    <p class="lead">Один раз заплатил — пользуешься без ограничений и ежемесячных списаний.</p>
+    <div class="adv-grid">
+      <div class="adv"><span class="ico">💸</span><b>Разово 80 000 ₽</b><span>Никаких ежемесячных подписок</span></div>
+      <div class="adv"><span class="ico">⏱️</span><b>Окупаемость 1,5–2 мес</b><span>За счёт возвращённых клиентов</span></div>
+      <div class="adv"><span class="ico">📱</span><b>Телефон и ПК</b><span>Адаптивный интерфейс</span></div>
+      <div class="adv"><span class="ico">☁️</span><b>Данные в облаке</b><span>Не теряются и синхронизируются</span></div>
+      <div class="adv"><span class="ico">⚡</span><b>Telegram за 20 сек</b><span>Клиент подключается по ссылке</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Окупаемость ===== -->
+<section class="section" style="background:var(--bg2);">
+  <div class="wrap">
+    <span class="eyebrow">Окупаемость</span>
+    <h2>Математика простая</h2>
+    <p class="lead">Даже если CRM вернёт всего пару «забытых» клиентов в месяц — она уже окупается.</p>
+    <div class="roi">
+      <div class="roi-grid">
+        <div>
+          <div class="num">50 000 ₽</div>
+          <div class="lbl">теряет автосервис без CRM каждый месяц<br>(забытые записи, не позванные на ТО)</div>
+        </div>
+        <div class="sep">→</div>
+        <div>
+          <div class="num">80 000 ₽</div>
+          <div class="lbl">стоимость CRM<br>разово, без подписки</div>
+        </div>
+        <div class="sep">→</div>
+        <div>
+          <div class="num">1,5–2 мес</div>
+          <div class="lbl">и система полностью<br>окупилась</div>
+        </div>
+      </div>
+      <div class="roi-concl">📈 Дальше CRM работает <span class="accent">в плюс</span> — без ежемесячных платежей.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Контакты ===== -->
+<section class="section" id="contacts">
+  <div class="wrap">
+    <span class="eyebrow">Контакты</span>
+    <h2>Свяжитесь с нами — покажем демо</h2>
+    <p class="lead">Напишите удобным способом — пришлём презентацию и ответим на вопросы.</p>
+
+    <div class="contact-grid">
+      <a class="contact" href="max://chat?uid=14047811">
+        <span class="ico">📱</span>
+        <b>MAX</b>
+      </a>
+      <a class="contact" href="mailto:info@avtoservis-lite.ru">
+        <span class="ico">📧</span>
+        <b>Email</b>
+        <span>il.safin116@bk.ru</span>
+      </a>
+      <a class="contact" href="https://t.me/SafinIlgiz" target="_blank" rel="noopener">
+        <span class="ico">💬</span>
+        <b>Telegram</b>
+        <span>@SafinIlgiz</span>
+      </a>
+    </div>
+
+    <div class="contacts-cta">
+      <a class="btn" href="max://chat?uid=14047811">💬 Написать в MAX</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    🚗 <b>Автосервис Lite CRM</b> — учёт клиентов, записей и финансов для СТО и автосервисов.<br>
+    Разово 80 000 ₽ · без подписки · работает офлайн · данные в облаке.
+  </div>
+</footer>
+
+</body>
+</html>
