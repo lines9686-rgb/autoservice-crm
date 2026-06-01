@@ -1,0 +1,2228 @@
+<!DOCTYPE html>
+<html lang="ru" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d1117">
+  <title>Автосервис Lite CRM</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Автосервис">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <style>
+    :root { --accent: #fb8500; --accent-2: #ffb703; }
+    body { background: #0d1117; padding-bottom: 80px; -webkit-tap-highlight-color: transparent; }
+    .btn { border-radius: 12px; font-weight: 600; }
+    .btn-lg-touch { min-height: 52px; font-size: 1.05rem; }
+    .accent-btn { background: linear-gradient(135deg, var(--accent), var(--accent-2)); border: none; color: #1a1a1a; }
+    .accent-btn:hover, .accent-btn:active { filter: brightness(1.05); color: #1a1a1a; }
+    .accent-text { color: var(--accent-2) !important; }
+
+    .card { border: 1px solid #21262d; border-radius: 16px; background: #161b22; }
+    .nav-card { cursor: pointer; transition: transform .12s ease, border-color .12s ease; }
+    .nav-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .nav-card .icon {
+      font-size: 2.4rem; line-height: 1;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+
+    .stat-card { border-radius: 16px; }
+    .stat-num { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+
+    .list-item { border: 1px solid #21262d; border-radius: 14px; background: #161b22; }
+    .list-item:hover { border-color: #30363d; }
+
+    .page { display: none; }
+    .page.active { display: block; animation: fade .2s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px);} to {opacity:1; transform:none;} }
+
+    .brand-logo {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: flex; align-items: center; justify-content: center; color: #1a1a1a; font-size: 1.3rem;
+    }
+
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030;
+      background: #161b22cc; backdrop-filter: blur(10px);
+      border-top: 1px solid #21262d; display: flex;
+    }
+    .bottom-nav button {
+      flex: 1; background: none; border: none; color: #8b949e;
+      padding: 10px 4px; font-size: .72rem; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+    }
+    .bottom-nav button i { font-size: 1.35rem; }
+    .bottom-nav button.active { color: var(--accent-2); }
+    @media (min-width: 768px) { .bottom-nav { display: none; } body { padding-bottom: 24px; } }
+
+    .badge-status { font-size: .75rem; padding: .4em .7em; border-radius: 8px; }
+    .empty { color: #6e7681; }
+    .search-box .form-control { background:#0d1117; border-color:#30363d; }
+    .modal-content { border-radius: 18px; }
+    .form-control, .form-select { min-height: 48px; }
+
+    /* ===== Календарь ===== */
+    .cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:.75rem; gap:.5rem; }
+    .cal-weekdays, .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+    .cal-weekdays div { text-align:center; font-size:.7rem; color:#8b949e; text-transform:uppercase; padding:4px 0; }
+    .cal-cell {
+      border:1px solid #21262d; border-radius:10px; min-height:56px; padding:6px;
+      cursor:pointer; background:#0d1117; display:flex; flex-direction:column; gap:4px;
+      transition:border-color .12s, background .12s;
+    }
+    .cal-cell:hover { border-color: var(--accent); background:#11161d; }
+    .cal-cell .d { font-size:.85rem; font-weight:600; }
+    .cal-cell.other { opacity:.35; }
+    .cal-cell.today { border-color: var(--accent-2); }
+    .cal-cell.today .d { color: var(--accent-2); }
+    .cal-cell.selected { background: rgba(251,133,0,.16); border-color: var(--accent); }
+    .cal-cell .cnt {
+      margin-top:auto; font-size:.66rem; color:#1a1a1a; font-weight:800;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius:6px; padding:1px 6px; align-self:flex-start;
+    }
+    @media (max-width:575px){ .cal-cell{ min-height:46px; padding:4px;} .cal-cell .d{font-size:.78rem;} }
+
+    .cancelled { opacity:.55; }
+    .cancelled .item-title { text-decoration: line-through; }
+
+    .instr { background:#0d1117; border:1px solid #21262d; border-radius:12px; padding:1rem 1.1rem; }
+    .instr ol { margin:0; padding-left:1.2rem; }
+    .instr li { margin-bottom:.35rem; }
+
+    .accordion {
+      --bs-accordion-bg:#161b22; --bs-accordion-color:#c9d1d9; --bs-accordion-border-color:#21262d;
+      --bs-accordion-active-bg:#1c2330; --bs-accordion-active-color:var(--accent-2);
+      --bs-accordion-btn-color:#c9d1d9; --bs-accordion-btn-focus-box-shadow:none;
+      border-radius:14px; overflow:hidden;
+    }
+    .accordion-button { font-weight:600; }
+    .help-text { white-space:pre-wrap; }
+  </style>
+</head>
+<body>
+
+<!-- ===== Верхняя навигация ===== -->
+<nav class="navbar navbar-expand-md sticky-top" style="background:#161b22; border-bottom:1px solid #21262d;">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="#" onclick="go('home');return false;">
+      <span class="brand-logo"><i class="bi bi-wrench-adjustable"></i></span>
+      <span>Автосервис <span class="accent-text">Lite</span></span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topnav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="topnav">
+      <ul class="navbar-nav ms-auto gap-1">
+        <li class="nav-item"><a class="nav-link nav-go" data-page="home" href="#" onclick="go('home');return false;"><i class="bi bi-house-door me-1"></i>Главная</a></li>
+        <li class="nav-item"><a class="nav-link nav-go" data-page="clients" href="#" onclick="go('clients');return false;"><i class="bi bi-people me-1"></i>Клиенты</a></li>
+        <li class="nav-item"><a class="nav-link nav-go" data-page="appointments" href="#" onclick="go('appointments');return false;"><i class="bi bi-calendar-check me-1"></i>Запись</a></li>
+        <li class="nav-item"><a class="nav-link nav-go" data-page="cars" href="#" onclick="go('cars');return false;"><i class="bi bi-car-front me-1"></i>Автомобили</a></li>
+        <li class="nav-item"><a class="nav-link nav-go" data-page="pricelist" href="#" onclick="go('pricelist');return false;"><i class="bi bi-tags me-1"></i>Прайс-лист</a></li>
+        <li class="nav-item"><a class="nav-link nav-go" data-page="finance" href="#" onclick="go('finance');return false;"><i class="bi bi-cash-coin me-1"></i>Финансы</a></li>
+        <li class="nav-item"><a class="nav-link nav-go" data-page="reports" href="#" onclick="go('reports');return false;"><i class="bi bi-bar-chart me-1"></i>Отчёты</a></li>
+        <li class="nav-item"><a class="nav-link nav-go" data-page="settings" href="#" onclick="go('settings');return false;"><i class="bi bi-gear me-1"></i>Настройки</a></li>
+        <li class="nav-item"><a class="nav-link nav-go" data-page="help" href="#" onclick="go('help');return false;"><i class="bi bi-question-circle me-1"></i>Помощь</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4">
+
+  <!-- ============ ГЛАВНАЯ ============ -->
+  <section id="page-home" class="page">
+    <div class="mb-4">
+      <h2 class="fw-bold mb-1" id="greeting">Добро пожаловать 👋</h2>
+      <p class="text-secondary mb-0" id="todayStr"></p>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="card stat-card h-100 p-3"><div class="d-flex align-items-center gap-3">
+          <i class="bi bi-people-fill fs-2 accent-text"></i>
+          <div><div class="stat-num" id="statClients">0</div><div class="text-secondary small">Клиентов всего</div></div>
+        </div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card stat-card h-100 p-3"><div class="d-flex align-items-center gap-3">
+          <i class="bi bi-calendar-event-fill fs-2 accent-text"></i>
+          <div><div class="stat-num" id="statToday">0</div><div class="text-secondary small">Записей на сегодня</div></div>
+        </div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card stat-card h-100 p-3"><div class="d-flex align-items-center gap-3">
+          <i class="bi bi-car-front-fill fs-2 accent-text"></i>
+          <div><div class="stat-num" id="statCars">0</div><div class="text-secondary small">Автомобилей</div></div>
+        </div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card stat-card h-100 p-3"><div class="d-flex align-items-center gap-3">
+          <i class="bi bi-bell-fill fs-2 accent-text"></i>
+          <div><div class="stat-num" id="statReminders">0</div><div class="text-secondary small">Напоминаний ТО</div></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div id="remindersBlock" class="mb-2"></div>
+
+    <h5 class="fw-bold mb-3">Разделы</h5>
+    <div class="row g-3">
+      <div class="col-6 col-md-4">
+        <div class="card nav-card h-100 p-4 text-center" onclick="go('clients')">
+          <div class="icon mb-2"><i class="bi bi-people"></i></div>
+          <div class="fw-bold">Клиенты</div><div class="text-secondary small">База клиентов</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="card nav-card h-100 p-4 text-center" onclick="go('appointments')">
+          <div class="icon mb-2"><i class="bi bi-calendar-check"></i></div>
+          <div class="fw-bold">Запись</div><div class="text-secondary small">Календарь и расписание</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="card nav-card h-100 p-4 text-center" onclick="go('cars')">
+          <div class="icon mb-2"><i class="bi bi-car-front"></i></div>
+          <div class="fw-bold">Автомобили</div><div class="text-secondary small">Гараж и регламенты ТО</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="card nav-card h-100 p-4 text-center" onclick="go('pricelist')">
+          <div class="icon mb-2"><i class="bi bi-tags"></i></div>
+          <div class="fw-bold">Прайс-лист</div><div class="text-secondary small">Услуги, цены, время</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="card nav-card h-100 p-4 text-center" onclick="go('finance')">
+          <div class="icon mb-2"><i class="bi bi-cash-coin"></i></div>
+          <div class="fw-bold">Финансы</div><div class="text-secondary small">Доходы, расходы, прибыль</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="card nav-card h-100 p-4 text-center" onclick="go('reports')">
+          <div class="icon mb-2"><i class="bi bi-bar-chart"></i></div>
+          <div class="fw-bold">Отчёты</div><div class="text-secondary small">Аналитика и экспорт</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="card nav-card h-100 p-4 text-center" onclick="go('settings')">
+          <div class="icon mb-2"><i class="bi bi-gear"></i></div>
+          <div class="fw-bold">Настройки</div><div class="text-secondary small">Telegram-уведомления</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="card nav-card h-100 p-4 text-center" onclick="go('help')">
+          <div class="icon mb-2"><i class="bi bi-question-circle"></i></div>
+          <div class="fw-bold">Помощь</div><div class="text-secondary small">Инструкция для мастера</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 text-end">
+      <button class="btn btn-outline-secondary btn-sm" onclick="resetData()"><i class="bi bi-trash3 me-1"></i>Очистить все данные</button>
+    </div>
+  </section>
+
+  <!-- ============ КЛИЕНТЫ ============ -->
+  <section id="page-clients" class="page">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h2 class="fw-bold mb-0"><i class="bi bi-people me-2 accent-text"></i>Клиенты</h2>
+      <button class="btn accent-btn btn-lg-touch px-4" onclick="openClientForm()"><i class="bi bi-person-plus me-2"></i>Добавить клиента</button>
+    </div>
+    <div class="search-box mb-3">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input id="clientSearch" type="search" class="form-control form-control-lg" placeholder="Поиск по имени или госномеру…" oninput="renderClients()">
+      </div>
+    </div>
+    <div id="clientsList" class="vstack gap-2"></div>
+  </section>
+
+  <!-- ============ ЗАПИСЬ ============ -->
+  <section id="page-appointments" class="page">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h2 class="fw-bold mb-0"><i class="bi bi-calendar-check me-2 accent-text"></i>Запись</h2>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-lg-touch" onclick="openMasters()"><i class="bi bi-person-badge me-1"></i><span class="d-none d-sm-inline">Мастера</span></button>
+        <button class="btn accent-btn btn-lg-touch px-3" onclick="openApptForm()"><i class="bi bi-plus-circle me-2"></i>Новая запись</button>
+      </div>
+    </div>
+
+    <div class="alert alert-secondary py-2 small d-flex align-items-center gap-2 mb-3" style="background:#161b22;border-color:#21262d;">
+      <i class="bi bi-hand-index-thumb accent-text"></i> Нажмите на любую дату в календаре, чтобы создать запись на этот день.
+    </div>
+
+    <div class="card p-3 mb-3">
+      <div class="cal-head">
+        <button class="btn btn-outline-secondary" onclick="calNav(-1)"><i class="bi bi-chevron-left"></i></button>
+        <div class="text-center">
+          <div class="fw-bold fs-5" id="calTitle">—</div>
+          <button class="btn btn-link btn-sm p-0 accent-text text-decoration-none" onclick="calToday()">Текущий месяц</button>
+        </div>
+        <button class="btn btn-outline-secondary" onclick="calNav(1)"><i class="bi bi-chevron-right"></i></button>
+      </div>
+      <div class="cal-weekdays"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <div class="card p-3 mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <label class="form-label small mb-1">Дата</label>
+          <input id="filterDate" type="date" class="form-control" onchange="onFilterDate()">
+        </div>
+        <div class="col-7 col-md-3">
+          <label class="form-label small mb-1">Статус</label>
+          <select id="filterStatus" class="form-select" onchange="renderAppointments()">
+            <option value="">Все статусы</option>
+            <option value="confirmed">Подтверждена</option>
+            <option value="done">Выполнена</option>
+            <option value="cancelled">Отменена</option>
+          </select>
+        </div>
+        <div class="col-5 col-md-2 d-grid">
+          <label class="form-label small mb-1">&nbsp;</label>
+          <button class="btn btn-outline-secondary" onclick="clearDateFilter()">Все даты</button>
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label small mb-1">Поиск</label>
+          <input id="apptSearch" type="search" class="form-control" placeholder="Клиент, услуга…" oninput="renderAppointments()">
+        </div>
+      </div>
+    </div>
+
+    <div id="apptList" class="vstack gap-2"></div>
+  </section>
+
+  <!-- ============ АВТОМОБИЛИ ============ -->
+  <section id="page-cars" class="page">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h2 class="fw-bold mb-0"><i class="bi bi-car-front me-2 accent-text"></i>Автомобили</h2>
+      <button class="btn accent-btn btn-lg-touch px-4" onclick="openCarForm()"><i class="bi bi-plus-circle me-2"></i>Добавить авто</button>
+    </div>
+    <div class="search-box mb-3">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input id="carSearch" type="search" class="form-control form-control-lg" placeholder="Поиск по марке, госномеру или владельцу…" oninput="renderCars()">
+      </div>
+    </div>
+    <div id="carsList" class="vstack gap-2"></div>
+  </section>
+
+  <!-- ============ ПРАЙС-ЛИСТ ============ -->
+  <section id="page-pricelist" class="page">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h2 class="fw-bold mb-0"><i class="bi bi-tags me-2 accent-text"></i>Прайс-лист</h2>
+      <button class="btn accent-btn btn-lg-touch px-4" onclick="openServiceForm()"><i class="bi bi-plus-circle me-2"></i>Добавить услугу</button>
+    </div>
+    <div class="search-box mb-3">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input id="serviceSearch" type="search" class="form-control form-control-lg" placeholder="Поиск услуги или категории…" oninput="renderPricelist()">
+      </div>
+    </div>
+    <div id="pricelistList" class="vstack gap-2"></div>
+  </section>
+
+  <!-- ============ НАСТРОЙКИ ============ -->
+  <section id="page-settings" class="page">
+    <h2 class="fw-bold mb-3"><i class="bi bi-gear me-2 accent-text"></i>Настройки</h2>
+
+    <!-- Telegram -->
+    <div class="card p-3 p-md-4 mb-3">
+      <h5 class="fw-bold mb-3"><i class="bi bi-telegram me-2" style="color:#229ED9"></i>Telegram-уведомления</h5>
+      <div id="tgBotStatus" class="mb-3 small"></div>
+
+      <label class="form-label small mb-1">Telegram Bot Token</label>
+      <input id="setTgToken" class="form-control mb-1" placeholder="123456789:ABCdef..." onchange="saveSettings()">
+      <div class="form-text mb-3">Получить токен: в Telegram напишите <b>@BotFather</b> → команда <code>/newbot</code> → скопируйте выданный токен.</div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn accent-btn btn-lg-touch px-4" onclick="checkToken()"><i class="bi bi-shield-check me-1"></i>Проверить токен</button>
+        <button class="btn btn-outline-info btn-lg-touch px-4" onclick="syncTelegramUpdates()"><i class="bi bi-arrow-repeat me-1"></i>Проверить подключения</button>
+      </div>
+    </div>
+
+    <!-- Инструкция по Telegram -->
+    <div class="card p-3 p-md-4 mb-3">
+      <h6 class="fw-bold mb-3">📱 Инструкция: Telegram-уведомления</h6>
+
+      <div class="fw-semibold mb-1">1) Как получить токен бота</div>
+      <ol class="small text-secondary ps-3 mb-3">
+        <li>В Telegram найдите <b>@BotFather</b>.</li>
+        <li>Отправьте команду <code>/newbot</code>, задайте имя и username бота.</li>
+        <li>Скопируйте выданный <b>токен</b>, вставьте в поле выше и нажмите <b>«Проверить токен»</b>.</li>
+      </ol>
+
+      <div class="fw-semibold mb-1">2) Как узнать свой chat_id</div>
+      <ol class="small text-secondary ps-3 mb-3">
+        <li>Откройте в Telegram бота <b>@userinfobot</b> и нажмите <b>«Старт»</b>.</li>
+        <li>Бот пришлёт ваш <b>chat_id</b> (число) — пригодится, чтобы проверить отправку сообщений себе.</li>
+      </ol>
+
+      <div class="fw-semibold mb-1">3) Как подключить клиента</div>
+      <div class="instr mb-3">
+        <ol>
+          <li>Введите токен бота и нажмите <b>«Проверить токен»</b>.</li>
+          <li>В карточке клиента нажмите <b>«Сгенерировать ссылку»</b>.</li>
+          <li>Нажмите <b>«Скопировать текст для клиента»</b>.</li>
+          <li>Отправьте текст клиенту в <b>WhatsApp</b>.</li>
+          <li>Клиент нажимает на ссылку → <b>«Старт»</b> → готово.</li>
+        </ol>
+      </div>
+      <p class="small text-secondary mb-3">Клиент сам подключается за 20 секунд. Вам не нужно объяснять, как найти chat_id — после нажатия «Проверить подключения» CRM сама привяжет его к карточке.</p>
+      <div class="fw-semibold mb-1">После подключения клиент будет получать:</div>
+      <ul class="small text-secondary mb-3">
+        <li>🔔 Напоминание о записи за 1 день</li>
+        <li>✅ Уведомление о готовности авто</li>
+        <li>⚠️ Приглашение на ТО</li>
+      </ul>
+      <div class="form-text"><i class="bi bi-shield-lock me-1"></i>Токен хранится локально в этом браузере. Автоматические уведомления отправляются, пока CRM открыта.</div>
+    </div>
+
+    <!-- Облачная база (Supabase) -->
+    <div class="card p-3 p-md-4 mb-3">
+      <h5 class="fw-bold mb-3"><i class="bi bi-database me-2 accent-text"></i>Облачная база (Supabase)</h5>
+      <div id="supaStatus" class="small mb-3"></div>
+      <label class="form-label small mb-1">Supabase URL</label>
+      <input id="supaUrl" class="form-control mb-2" placeholder="https://xxxxx.supabase.co" onchange="saveSupa()">
+      <label class="form-label small mb-1">Supabase anon key</label>
+      <input id="supaKey" class="form-control mb-1" placeholder="eyJhbGciOiJIUzI1NiIs..." onchange="saveSupa()">
+      <div class="form-text mb-3">Ключ хранится локально в этом браузере и используется для доступа к вашей базе. Данные кэшируются в IndexedDB — приложение работает и офлайн.</div>
+      <button class="btn accent-btn btn-lg-touch px-4" onclick="forceSync(false)"><i class="bi bi-arrow-repeat me-1"></i>Принудительная синхронизация</button>
+    </div>
+
+    <!-- Инструкция по Supabase -->
+    <div class="card p-3 p-md-4 mb-3">
+      <h6 class="fw-bold mb-3">🗄️ Как подключить Supabase (бесплатно)</h6>
+      <ol class="small text-secondary ps-3 mb-3">
+        <li>Зарегистрируйтесь на <b>supabase.com</b> — это бесплатно.</li>
+        <li>Создайте новый проект (New project), задайте пароль БД, дождитесь создания.</li>
+        <li>Откройте <b>Project Settings → API</b> и скопируйте <b>Project URL</b> и ключ <b>anon public</b>.</li>
+        <li>Вставьте их в поля выше (сохраняются автоматически).</li>
+        <li>Один раз создайте таблицы: откройте <b>SQL Editor → New query</b>, вставьте код ниже и нажмите <b>Run</b>.</li>
+        <li>Вернитесь сюда и нажмите <b>«Принудительная синхронизация»</b>.</li>
+      </ol>
+      <div class="instr" style="overflow:auto"><pre class="mb-0" style="white-space:pre; font-size:.74rem; color:#c9d1d9">create table if not exists clients (
+  id text primary key, name text, phone text, telegram_id text, notes text
+);
+create table if not exists cars (
+  id text primary key, client_id text, brand text, model text,
+  plate text, mileage int8, oil_interval int8, to_interval int8
+);
+create table if not exists bookings (
+  id text primary key, client_id text, car_id text, services jsonb,
+  total_price numeric, date date, time text, master text, status text
+);
+create table if not exists services (
+  id text primary key, name text, price numeric, duration int8
+);
+create table if not exists expenses (
+  id text primary key, category text, amount numeric, date date, comment text
+);
+
+-- доступ с anon-ключом (простой однопользовательский кабинет):
+alter table clients  enable row level security;
+alter table cars     enable row level security;
+alter table bookings enable row level security;
+alter table services enable row level security;
+alter table expenses enable row level security;
+create policy anon_clients  on clients  for all to anon using (true) with check (true);
+create policy anon_cars     on cars     for all to anon using (true) with check (true);
+create policy anon_bookings on bookings for all to anon using (true) with check (true);
+create policy anon_services on services for all to anon using (true) with check (true);
+create policy anon_expenses on expenses for all to anon using (true) with check (true);</pre></div>
+      <div class="form-text mt-2"><i class="bi bi-shield-lock me-1"></i>anon-ключ виден в браузере — это нормально для личного кабинета. Для нескольких сотрудников позже включите Auth и более строгие политики RLS.</div>
+    </div>
+
+  </section>
+
+  <!-- ============ ФИНАНСЫ ============ -->
+  <section id="page-finance" class="page">
+    <h2 class="fw-bold mb-3"><i class="bi bi-cash-coin me-2 accent-text"></i>Финансы</h2>
+
+    <div class="btn-group mb-3" role="group">
+      <button class="btn btn-outline-secondary" id="fp-day" onclick="setFinPeriod('day')">День</button>
+      <button class="btn btn-outline-secondary" id="fp-week" onclick="setFinPeriod('week')">Неделя</button>
+      <button class="btn btn-outline-secondary" id="fp-month" onclick="setFinPeriod('month')">Месяц</button>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-lg-3"><div class="card p-3 h-100"><div class="text-secondary small mb-1">Выручка</div><div class="fw-bold" style="font-size:1.35rem" id="finRevenue">0 ₽</div></div></div>
+      <div class="col-6 col-lg-3"><div class="card p-3 h-100"><div class="text-secondary small mb-1">Расходы</div><div class="fw-bold text-danger" style="font-size:1.35rem" id="finExpense">0 ₽</div></div></div>
+      <div class="col-6 col-lg-3"><div class="card p-3 h-100"><div class="text-secondary small mb-1">Зарплата мастеров</div><div class="fw-bold" style="font-size:1.35rem" id="finSalary">0 ₽</div></div></div>
+      <div class="col-6 col-lg-3"><div class="card p-3 h-100"><div class="text-secondary small mb-1">Чистая прибыль</div><div class="fw-bold accent-text" style="font-size:1.35rem" id="finProfit">0 ₽</div></div></div>
+    </div>
+
+    <div class="card p-3 mb-3">
+      <label class="form-label mb-1">Зарплата мастеров — % от выручки</label>
+      <div class="input-group" style="max-width:240px">
+        <input id="salaryPercent" class="form-control" inputmode="numeric" onchange="setSalaryPercent()">
+        <span class="input-group-text">%</span>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-12 col-lg-7"><div class="card p-3"><div class="fw-semibold mb-2">Доходы по дням</div><div style="position:relative;height:240px"><canvas id="chartIncome"></canvas></div></div></div>
+      <div class="col-12 col-lg-5"><div class="card p-3"><div class="fw-semibold mb-2">Структура расходов</div><div style="position:relative;height:240px"><canvas id="chartExpense"></canvas></div></div></div>
+    </div>
+
+    <div class="card p-3 mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="fw-bold"><i class="bi bi-arrow-down-circle text-success me-1"></i>Доходы</div>
+        <button class="btn btn-sm accent-btn" onclick="openIncomeForm()"><i class="bi bi-plus-lg me-1"></i>Доход вручную</button>
+      </div>
+      <div id="incomeList" class="vstack gap-2"></div>
+    </div>
+
+    <div class="card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="fw-bold"><i class="bi bi-arrow-up-circle text-danger me-1"></i>Расходы</div>
+        <button class="btn btn-sm accent-btn" onclick="openExpenseForm()"><i class="bi bi-plus-lg me-1"></i>Расход</button>
+      </div>
+      <div id="expenseList" class="vstack gap-2"></div>
+    </div>
+  </section>
+
+  <!-- ============ ОТЧЁТЫ ============ -->
+  <section id="page-reports" class="page">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h2 class="fw-bold mb-0"><i class="bi bi-bar-chart me-2 accent-text"></i>Отчёты</h2>
+      <button class="btn accent-btn btn-lg-touch px-4" onclick="exportExcel()"><i class="bi bi-file-earmark-excel me-2"></i>Экспорт в Excel</button>
+    </div>
+
+    <div class="card p-3 mb-3">
+      <div class="btn-group flex-wrap mb-1" role="group">
+        <button class="btn btn-outline-secondary" id="rp-day" onclick="setRepPeriod('day')">День</button>
+        <button class="btn btn-outline-secondary" id="rp-week" onclick="setRepPeriod('week')">Неделя</button>
+        <button class="btn btn-outline-secondary" id="rp-month" onclick="setRepPeriod('month')">Месяц</button>
+        <button class="btn btn-outline-secondary" id="rp-all" onclick="setRepPeriod('all')">Всё время</button>
+        <button class="btn btn-outline-secondary" id="rp-custom" onclick="setRepPeriod('custom')">Период</button>
+      </div>
+      <div id="repCustom" class="row g-2 align-items-end d-none mt-1">
+        <div class="col"><label class="form-label small mb-1">С</label><input id="repFrom" type="date" class="form-control" onchange="renderReports()"></div>
+        <div class="col"><label class="form-label small mb-1">По</label><input id="repTo" type="date" class="form-control" onchange="renderReports()"></div>
+      </div>
+      <div id="repPeriodLabel" class="small text-secondary mt-2"></div>
+    </div>
+
+    <div id="reportsContent" class="vstack gap-3"></div>
+  </section>
+
+  <!-- ============ ПОМОЩЬ ============ -->
+  <section id="page-help" class="page">
+    <h2 class="fw-bold mb-1"><i class="bi bi-question-circle me-2 accent-text"></i>Помощь</h2>
+    <p class="text-secondary mb-3">Короткая инструкция для мастера. Нажмите на пункт, чтобы раскрыть. 👇</p>
+
+    <div class="accordion mb-4" id="helpAcc">
+
+      <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#hlp1"><i class="bi bi-person-plus me-2 accent-text"></i>👤 1. Как добавить клиента</button></h2>
+        <div id="hlp1" class="accordion-collapse collapse" data-bs-parent="#helpAcc"><div class="accordion-body small">
+          <ol class="mb-0 ps-3">
+            <li>Откройте раздел <b>«Клиенты»</b> → кнопка <b>«Добавить клиента»</b>.</li>
+            <li>Заполните поля: <b>имя</b>, <b>телефон</b>, <b>заметки</b> (необязательно).</li>
+            <li>Нажмите <b>«Сохранить»</b>. 🚗 Автомобиль добавляется отдельно — см. пункт 2.</li>
+          </ol>
+        </div></div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#hlp2"><i class="bi bi-car-front me-2 accent-text"></i>🚗 2. Как добавить автомобиль</button></h2>
+        <div id="hlp2" class="accordion-collapse collapse" data-bs-parent="#helpAcc"><div class="accordion-body small">
+          <ol class="mb-0 ps-3">
+            <li>В разделе <b>«Клиенты»</b> откройте карточку клиента и нажмите <b>«+ Добавить автомобиль»</b>.</li>
+            <li>Выберите <b>марку</b> из списка (или пункт <b>«Другая (ввести вручную)»</b>).</li>
+            <li>Введите <b>госномер</b> и <b>пробег</b>.</li>
+            <li>Нажмите <b>«Сохранить»</b>. Чтобы добавить ещё одну машину — <b>«+ Ещё авто»</b>.</li>
+            <li>Интервалы ТО подставятся автоматически — CRM напомнит о ТО. 🔔</li>
+          </ol>
+        </div></div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#hlp3"><i class="bi bi-calendar-check me-2 accent-text"></i>📅 3. Как создать запись</button></h2>
+        <div id="hlp3" class="accordion-collapse collapse" data-bs-parent="#helpAcc"><div class="accordion-body small">
+          <ol class="mb-0 ps-3">
+            <li>Раздел <b>«Запись»</b> → нажмите на <b>дату в календаре</b> (или «Новая запись»).</li>
+            <li>Выберите <b>клиента</b> из списка.</li>
+            <li>Выберите <b>автомобиль</b> — только из авто этого клиента.</li>
+            <li>Выберите <b>услуги из прайс-листа</b> кнопкой <b>«Добавить ещё услугу»</b> ➕ (можно несколько — сумма и время посчитаются сами).</li>
+            <li>Укажите <b>дату</b>, <b>время</b> и <b>мастера</b>.</li>
+            <li>Нажмите <b>«Сохранить»</b>. ✅</li>
+          </ol>
+        </div></div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#hlp4"><i class="bi bi-telegram me-2" style="color:#229ED9"></i>💬 4. Как подключить Telegram-уведомления</button></h2>
+        <div id="hlp4" class="accordion-collapse collapse" data-bs-parent="#helpAcc"><div class="accordion-body small">
+          <ol class="mb-0 ps-3">
+            <li>Создайте бота: в Telegram напишите <b>@BotFather</b> → команда <code>/newbot</code> → скопируйте <b>токен</b>.</li>
+            <li>В разделе <b>«Настройки»</b> вставьте токен и нажмите <b>«Проверить токен»</b>.</li>
+            <li>В карточке клиента нажмите <b>«Скопировать текст для клиента»</b>.</li>
+            <li>Отправьте текст клиенту в <b>WhatsApp</b>. Клиент нажимает на ссылку → <b>«Старт»</b>.</li>
+            <li>Нажмите <b>«Проверить подключения»</b> — клиент привяжется ✅, дальше напоминания уходят сами (🔔 запись / ✅ готово авто / ⚠️ пора на ТО).</li>
+          </ol>
+        </div></div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#hlp5"><i class="bi bi-database me-2 accent-text"></i>🗄️ 5. Как настроить Supabase (облачное хранение)</button></h2>
+        <div id="hlp5" class="accordion-collapse collapse" data-bs-parent="#helpAcc"><div class="accordion-body small">
+          <ol class="mb-0 ps-3">
+            <li>Зарегистрируйтесь на <b>supabase.com</b> — бесплатно.</li>
+            <li>Создайте проект и скопируйте <b>Project URL</b> и ключ <b>anon public</b> (Project Settings → API).</li>
+            <li>Выполните <b>SQL-запрос</b> для создания таблиц — скопируйте его из инструкции в разделе <b>«Настройки»</b> (SQL Editor → Run).</li>
+            <li>Вставьте <b>URL</b> и <b>anon key</b> в CRM (раздел «Настройки») и нажмите <b>«Принудительная синхронизация»</b>. ☁️</li>
+            <li>Готово: данные хранятся в облаке и синхронизируются между устройствами. Без интернета CRM работает офлайн и досинхронизируется позже.</li>
+          </ol>
+        </div></div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#hlp6"><i class="bi bi-bar-chart me-2 accent-text"></i>📊 6. Как посмотреть финансы и отчёты</button></h2>
+        <div id="hlp6" class="accordion-collapse collapse" data-bs-parent="#helpAcc"><div class="accordion-body small">
+          <div class="fw-semibold mb-1">💰 Раздел «Финансы»</div>
+          <ul class="ps-3 mb-2">
+            <li>Переключатель <b>День / Неделя / Месяц</b>: выручка, расходы, зарплата мастеров и чистая прибыль.</li>
+            <li>Графики: доходы по дням и структура расходов.</li>
+            <li>Добавить расход: блок <b>«Расходы»</b> → <b>«Расход»</b> → дата, сумма, категория, комментарий.</li>
+          </ul>
+          <div class="fw-semibold mb-1">📈 Раздел «Отчёты»</div>
+          <ul class="ps-3 mb-0">
+            <li>Загрузка мастеров (часы и выручка), <b>топ-5 услуг</b>, <b>ABC-анализ</b> клиентов, <b>прогноз</b> на следующий месяц.</li>
+            <li>Кнопка <b>«Экспорт в Excel»</b> 📁 — выгрузка отчёта в файл .xlsx.</li>
+          </ul>
+        </div></div>
+      </div>
+
+    </div>
+
+    <div class="card p-3 p-md-4">
+      <h5 class="fw-bold mb-2">📨 Текст для клиента</h5>
+      <p class="small text-secondary mb-2">Скопируйте и отправьте клиенту в WhatsApp или SMS. Вместо <code>[ссылка]</code> вставьте персональную ссылку из карточки клиента (кнопка <b>«Сгенерировать ссылку»</b>).</p>
+      <div class="instr help-text mb-3" id="clientHelpText">«Здравствуйте! Чтобы получать напоминания о записи и ТО, перейдите по ссылке и нажмите «Старт»: [ссылка]»</div>
+      <button class="btn accent-btn btn-lg-touch px-4" onclick="copyHelpClientText()"><i class="bi bi-clipboard me-1"></i>Скопировать текст</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- ===== Нижняя навигация ===== -->
+<div class="bottom-nav">
+  <button data-page="home" onclick="go('home')"><i class="bi bi-house-door"></i>Главная</button>
+  <button data-page="clients" onclick="go('clients')"><i class="bi bi-people"></i>Клиенты</button>
+  <button data-page="appointments" onclick="go('appointments')"><i class="bi bi-calendar-check"></i>Запись</button>
+  <button data-page="cars" onclick="go('cars')"><i class="bi bi-car-front"></i>Авто</button>
+</div>
+
+<!-- ===== Модалка: Клиент ===== -->
+<div class="modal fade" id="clientModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" onsubmit="saveClient(event)">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="clientModalTitle">Новый клиент</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body vstack gap-3">
+        <input type="hidden" id="clientId">
+        <div><label class="form-label">Имя <span class="text-danger">*</span></label>
+          <input id="clientName" class="form-control form-control-lg" required placeholder="Иван Петров"></div>
+        <div><label class="form-label">Телефон <span class="text-danger">*</span></label>
+          <input id="clientPhone" class="form-control form-control-lg" required placeholder="+7 900 123-45-67" inputmode="tel"></div>
+        <div><label class="form-label">Заметки</label>
+          <textarea id="clientNotes" class="form-control" rows="2" placeholder="Пожелания, особенности…"></textarea></div>
+        <div class="form-text"><i class="bi bi-info-circle me-1"></i>Автомобиль добавляется в карточке клиента после сохранения — кнопкой «Добавить автомобиль».</div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary btn-lg-touch" data-bs-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn accent-btn btn-lg-touch px-4">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Модалка: Авто клиента (быстрое добавление) ===== -->
+<div class="modal fade" id="clientCarModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" onsubmit="saveClientCar(event,false)">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="clientCarTitle">Авто клиента</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body vstack gap-3">
+        <input type="hidden" id="clientCarClientId">
+        <div>
+          <label class="form-label">Марка и модель <span class="text-danger">*</span></label>
+          <select id="ccModelSelect" class="form-select form-select-lg" required onchange="onCcModelChange()"></select>
+          <input id="ccModelCustom" class="form-control form-control-lg mt-2 d-none" placeholder="Введите марку и модель">
+        </div>
+        <div><label class="form-label">Госномер</label>
+          <input id="ccPlate" class="form-control form-control-lg text-uppercase" placeholder="А123ВС 77"></div>
+        <div><label class="form-label">Текущий пробег, км</label>
+          <input id="ccMileage" class="form-control form-control-lg" inputmode="numeric" placeholder="например, 85000"></div>
+        <div class="form-text"><i class="bi bi-info-circle me-1"></i>Интервалы ТО подставятся по регламенту модели автоматически.</div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-warning btn-lg-touch" onclick="saveClientCar(null,true)"><i class="bi bi-plus-lg me-1"></i>Ещё авто</button>
+        <button type="submit" class="btn accent-btn btn-lg-touch px-4">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Модалка: Запись ===== -->
+<div class="modal fade" id="apptModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" onsubmit="saveAppt(event)">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="apptModalTitle">Новая запись</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body vstack gap-3">
+        <input type="hidden" id="apptId">
+        <div>
+          <label class="form-label">Клиент <span class="text-danger">*</span></label>
+          <select id="apptClientId" class="form-select form-select-lg" required onchange="onApptClientChange()"></select>
+          <div id="apptNoClients" class="form-text text-warning d-none">Сначала добавьте клиента в разделе «Клиенты».</div>
+        </div>
+        <div>
+          <label class="form-label">Автомобиль</label>
+          <select id="apptCarSelect" class="form-select form-select-lg" disabled></select>
+          <div id="apptNoCar" class="form-text text-warning d-none">У клиента нет автомобилей. Добавьте в карточке клиента.</div>
+        </div>
+        <div>
+          <label class="form-label">Услуги</label>
+          <select id="apptServiceSelect" class="form-select form-select-lg"></select>
+          <button type="button" class="btn btn-outline-warning btn-lg-touch w-100 mt-2" onclick="addApptService()"><i class="bi bi-plus-lg me-1"></i>Добавить ещё услугу</button>
+          <div id="apptItems" class="vstack gap-2 mt-2"></div>
+          <div class="d-flex justify-content-between mt-2 px-1 fw-semibold">
+            <span>Итого:</span>
+            <span class="accent-text"><span id="apptTotalPrice">0 ₽</span> · <span id="apptTotalDur">0 мин</span></span>
+          </div>
+        </div>
+        <div><label class="form-label">Мастер</label>
+          <select id="apptMaster" class="form-select form-select-lg" onchange="fillTimeOptions(apptTime.value)"></select></div>
+        <div class="row g-2">
+          <div class="col-7"><label class="form-label">Дата <span class="text-danger">*</span></label>
+            <input id="apptDate" type="date" class="form-control form-control-lg" required onchange="fillTimeOptions(apptTime.value)"></div>
+          <div class="col-5"><label class="form-label">Время <span class="text-danger">*</span></label>
+            <select id="apptTime" class="form-select form-select-lg" required></select></div>
+        </div>
+        <div><label class="form-label">Статус</label>
+          <select id="apptStatus" class="form-select form-select-lg">
+            <option value="confirmed">Подтверждена</option>
+            <option value="done">Выполнена</option>
+            <option value="cancelled">Отменена</option>
+          </select></div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary btn-lg-touch" data-bs-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn accent-btn btn-lg-touch px-4">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Модалка: Автомобиль ===== -->
+<div class="modal fade" id="carModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" onsubmit="saveCar(event)">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="carModalTitle">Новый автомобиль</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body vstack gap-3">
+        <input type="hidden" id="carId">
+        <div>
+          <label class="form-label">Марка и модель <span class="text-danger">*</span></label>
+          <select id="carModelSelect" class="form-select form-select-lg" required onchange="onCarModelChange()"></select>
+          <input id="carModelCustom" class="form-control form-control-lg mt-2 d-none" placeholder="Введите марку и модель">
+        </div>
+        <div><label class="form-label">Госномер</label>
+          <input id="carPlate" class="form-control form-control-lg text-uppercase" placeholder="А123ВС 77"></div>
+        <div><label class="form-label">Владелец</label>
+          <input id="carOwner" class="form-control form-control-lg" list="clientNames" placeholder="Имя клиента"></div>
+        <datalist id="clientNames"></datalist>
+
+        <hr class="my-1" style="border-color:#21262d">
+        <div><label class="form-label">Текущий пробег, км</label>
+          <input id="carMileage" class="form-control form-control-lg" inputmode="numeric" placeholder="например, 85000"></div>
+        <div class="row g-2">
+          <div class="col-6"><label class="form-label">Замена масла каждые, км</label>
+            <input id="carOilInterval" class="form-control form-control-lg" inputmode="numeric" placeholder="15000"></div>
+          <div class="col-6"><label class="form-label">ТО каждые, км</label>
+            <input id="carToInterval" class="form-control form-control-lg" inputmode="numeric" placeholder="15000"></div>
+        </div>
+        <div class="form-text"><i class="bi bi-info-circle me-1"></i>Интервалы подставляются по регламенту модели, но их можно изменить вручную. Следующее обслуживание = текущий пробег + интервал.</div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary btn-lg-touch" data-bs-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn accent-btn btn-lg-touch px-4">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Модалка: Мастера ===== -->
+<div class="modal fade" id="mastersModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-person-badge me-2 accent-text"></i>Мастера</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="mastersList" class="vstack gap-2 mb-3"></div>
+        <form class="input-group" onsubmit="addMaster();return false;">
+          <input id="newMaster" class="form-control form-control-lg" placeholder="Имя мастера">
+          <button class="btn accent-btn px-3" type="submit"><i class="bi bi-plus-lg"></i></button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Модалка: Доход ===== -->
+<div class="modal fade" id="incomeModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" onsubmit="saveIncome(event)">
+      <div class="modal-header border-0"><h5 class="modal-title fw-bold">Доход вручную</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body vstack gap-3">
+        <input type="hidden" id="incomeId">
+        <div class="row g-2">
+          <div class="col-7"><label class="form-label">Дата</label><input id="incomeDate" type="date" class="form-control form-control-lg"></div>
+          <div class="col-5"><label class="form-label">Сумма, ₽</label><input id="incomeAmount" class="form-control form-control-lg" inputmode="numeric" required></div>
+        </div>
+        <div><label class="form-label">Комментарий</label><input id="incomeNote" class="form-control form-control-lg" placeholder="Продажа аксессуаров, мойка…"></div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary btn-lg-touch" data-bs-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn accent-btn btn-lg-touch px-4">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Модалка: Расход ===== -->
+<div class="modal fade" id="expenseModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" onsubmit="saveExpense(event)">
+      <div class="modal-header border-0"><h5 class="modal-title fw-bold">Расход</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body vstack gap-3">
+        <input type="hidden" id="expenseId">
+        <div class="row g-2">
+          <div class="col-7"><label class="form-label">Дата</label><input id="expenseDate" type="date" class="form-control form-control-lg"></div>
+          <div class="col-5"><label class="form-label">Сумма, ₽</label><input id="expenseAmount" class="form-control form-control-lg" inputmode="numeric" required></div>
+        </div>
+        <div><label class="form-label">Категория</label><select id="expenseCat" class="form-select form-select-lg"></select></div>
+        <div><label class="form-label">Комментарий</label><input id="expenseNote" class="form-control form-control-lg" placeholder="Что куплено / оплачено"></div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary btn-lg-touch" data-bs-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn accent-btn btn-lg-touch px-4">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Модалка: Услуга (прайс-лист) ===== -->
+<div class="modal fade" id="serviceModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" onsubmit="saveService(event)">
+      <div class="modal-header border-0"><h5 class="modal-title fw-bold" id="serviceModalTitle">Новая услуга</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body vstack gap-3">
+        <input type="hidden" id="serviceId">
+        <div><label class="form-label">Название <span class="text-danger">*</span></label>
+          <input id="serviceName" class="form-control form-control-lg" required placeholder="Замена масла"></div>
+        <div class="row g-2">
+          <div class="col-6"><label class="form-label">Цена, ₽</label><input id="servicePrice" class="form-control form-control-lg" inputmode="numeric" placeholder="1500"></div>
+          <div class="col-6"><label class="form-label">Длительность, мин</label><input id="serviceDuration" class="form-control form-control-lg" inputmode="numeric" placeholder="30"></div>
+        </div>
+        <div><label class="form-label">Категория</label>
+          <input id="serviceCategory" class="form-control form-control-lg" list="serviceCatList" placeholder="ТО, Ремонт, Диагностика…">
+          <datalist id="serviceCatList"></datalist></div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary btn-lg-touch" data-bs-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn accent-btn btn-lg-touch px-4">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Модалка: Первый запуск (подключение облака) ===== -->
+<div class="modal fade" id="firstRunModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0"><h5 class="modal-title fw-bold">👋 Добро пожаловать!</h5></div>
+      <div class="modal-body vstack gap-3">
+        <p class="small text-secondary mb-0">Подключите облачную базу <b>Supabase</b> — данные будут синхронизироваться между устройствами. Или начните офлайн (всё хранится на этом устройстве, подключить облако можно позже в «Настройках»).</p>
+        <div><label class="form-label small mb-1">Supabase URL</label><input id="frUrl" class="form-control" placeholder="https://xxxxx.supabase.co"></div>
+        <div><label class="form-label small mb-1">Supabase anon key</label><input id="frKey" class="form-control" placeholder="eyJhbGci..."></div>
+        <div class="form-text">Где взять: supabase.com → проект → Project Settings → API. Инструкция и SQL для таблиц — в разделе «Настройки».</div>
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-secondary btn-lg-touch" onclick="firstRunSkip()">Работать офлайн</button>
+        <button class="btn accent-btn btn-lg-touch px-4" onclick="firstRunConnect()">Подключить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Контейнер всплывающих уведомлений -->
+<div id="toastWrap" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:2000;display:flex;flex-direction:column;gap:8px;align-items:center;width:92%;max-width:440px;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+/* ====================== БАЗА РЕГЛАМЕНТОВ (30 моделей) ======================
+   oil — интервал замены масла, км;  to — интервал планового ТО, км          */
+const REGS = {
+  'Hyundai Solaris':{oil:15000,to:15000}, 'Kia Rio':{oil:15000,to:15000}, 'Lada Vesta':{oil:15000,to:15000},
+  'Toyota Camry':{oil:10000,to:10000}, 'Ford Focus':{oil:15000,to:15000}, 'Renault Logan':{oil:15000,to:15000},
+  'Nissan X-Trail':{oil:15000,to:15000}, 'Skoda Octavia':{oil:15000,to:15000}, 'Volkswagen Polo':{oil:15000,to:15000},
+  'Chevrolet Cruze':{oil:15000,to:15000}, 'Lada Granta':{oil:15000,to:15000}, 'Lada Largus':{oil:15000,to:15000},
+  'Renault Duster':{oil:15000,to:15000}, 'Kia Sportage':{oil:15000,to:15000}, 'Hyundai Creta':{oil:15000,to:15000},
+  'Toyota RAV4':{oil:10000,to:10000}, 'Mazda CX-5':{oil:15000,to:15000}, 'Mitsubishi Outlander':{oil:15000,to:15000},
+  'Subaru Forester':{oil:15000,to:15000}, 'BMW 3 Series':{oil:15000,to:20000}, 'Mercedes-Benz C-Class':{oil:15000,to:20000},
+  'Audi A4':{oil:15000,to:15000}, 'Lexus RX':{oil:10000,to:10000}, 'Volvo XC60':{oil:15000,to:15000},
+  'Volkswagen Tiguan':{oil:15000,to:15000}, 'Hyundai Tucson':{oil:15000,to:15000}, 'Kia Optima':{oil:15000,to:15000},
+  'Nissan Qashqai':{oil:15000,to:15000}, 'Toyota Corolla':{oil:10000,to:10000}, 'Lada Niva':{oil:10000,to:10000},
+};
+const REMINDER_KM = 1000;
+
+/* ====================== ХРАНИЛИЩЕ ====================== */
+const DB = {
+  get(key, def){ try { const v = JSON.parse(localStorage.getItem('asl_'+key)); return v==null?(def!==undefined?def:[]):v; } catch(e){ return def!==undefined?def:[]; } },
+  set(key, val){ localStorage.setItem('asl_'+key, JSON.stringify(val)); }
+};
+let clients = DB.get('clients');
+let appts   = DB.get('appointments');
+let cars    = DB.get('cars');
+let masters = DB.get('masters');
+let notify  = DB.get('notify', {});
+let incomes  = DB.get('incomes');
+let expenses = DB.get('expenses');
+let finance  = DB.get('finance', {salaryPercent:40});
+let services = DB.get('services');
+
+const pad  = n => String(n).padStart(2,'0');
+const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc  = s => (s==null?'':String(s)).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const numv = s => { const n = parseInt(String(s==null?'':s).replace(/\D/g,''),10); return isNaN(n)?0:n; };
+const fmt  = n => (Number(n)||0).toLocaleString('ru-RU');
+const money = n => (Number(n)||0).toLocaleString('ru-RU') + ' ₽';
+const durText = min => { min=Math.round(Number(min)||0); const h=Math.floor(min/60), m=min%60; return h?(`${h} ч${m?` ${m} мин`:''}`):`${m} мин`; };
+const todayISO = () => { const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+const isoFrom  = (y,m,day) => `${y}-${pad(m+1)}-${pad(day)}`;
+
+const DEFAULT_SERVICES = () => ([
+  {id:uid(), name:'Замена масла',             price:1500, duration:30,  category:'ТО'},
+  {id:uid(), name:'Замена тормозных колодок', price:2500, duration:60,  category:'Ремонт'},
+  {id:uid(), name:'Диагностика подвески',     price:2000, duration:30,  category:'Диагностика'},
+  {id:uid(), name:'Шиномонтаж (4 колеса)',    price:2000, duration:45,  category:'Шиномонтаж'},
+  {id:uid(), name:'Компьютерная диагностика', price:1500, duration:40,  category:'Диагностика'},
+  {id:uid(), name:'Замена ремня ГРМ',         price:8000, duration:180, category:'Ремонт'},
+]);
+
+/* Демо-данные (первый запуск, когда нет ни кэша, ни облака) */
+function seedDemo(){
+  clients = [
+    {id:uid(), name:'Иван Петров',    phone:'+7 900 111-22-33', notes:'', carIds:[], tgChatId:''},
+    {id:uid(), name:'Мария Сидорова', phone:'+7 905 444-55-66', notes:'', carIds:[], tgChatId:''},
+    {id:uid(), name:'Сергей Кузнецов',phone:'+7 912 777-88-99', notes:'', carIds:[], tgChatId:''},
+  ];
+  cars = [
+    {id:uid(), model:'Toyota Camry', plate:'А123ВС 77', owner:'Иван Петров',
+     mileage:89500, oilInterval:10000, toInterval:10000, nextOilKm:90000, nextTOKm:95000},
+    {id:uid(), model:'Kia Rio',      plate:'В456ОР 99', owner:'Мария Сидорова',
+     mileage:42300, oilInterval:15000, toInterval:15000, nextOilKm:45000, nextTOKm:45000},
+    {id:uid(), model:'Lada Vesta',   plate:'Е789КХ 50', owner:'Сергей Кузнецов',
+     mileage:31200, oilInterval:15000, toInterval:15000, nextOilKm:30000, nextTOKm:30000},
+  ];
+  masters = ['Алексей Смирнов','Дмитрий Орлов','Виктор Кузьмин'];
+  services = DEFAULT_SERVICES();
+  appts = [
+    {id:uid(), clientId:clients[0].id, client:'Иван Петров',    carId:cars[0].id, car:'Toyota Camry · А123ВС 77',
+     items:[{name:'Замена масла',price:1500,duration:30},{name:'Шиномонтаж (4 колеса)',price:2000,duration:45}],
+     service:'Замена масла, Шиномонтаж (4 колеса)', price:3500, duration:75, master:'Алексей Смирнов', date:todayISO(), time:'10:00', status:'done'},
+    {id:uid(), clientId:clients[1].id, client:'Мария Сидорова', carId:cars[1].id, car:'Kia Rio · В456ОР 99',
+     items:[{name:'Диагностика подвески',price:2000,duration:30}],
+     service:'Диагностика подвески', price:2000, duration:30, master:'Дмитрий Орлов', date:todayISO(), time:'14:30', status:'confirmed'},
+  ];
+  expenses = [
+    {id:uid(), date:todayISO(), amount:5000,  category:'Запчасти', note:'Масло и фильтры'},
+    {id:uid(), date:todayISO(), amount:15000, category:'Аренда',   note:'Аренда бокса'},
+  ];
+  incomes = [];
+}
+
+/* Миграция/нормализация (выполняется при каждом старте, идемпотентно) */
+function migrate(){
+  if(!Array.isArray(clients)) clients=[];
+  if(!Array.isArray(cars)) cars=[];
+  if(!Array.isArray(appts)) appts=[];
+  if(!Array.isArray(incomes)) incomes=[];
+  if(!Array.isArray(expenses)) expenses=[];
+  if(!Array.isArray(services)) services=[];
+  notify  = { tgToken: (notify&&notify.tgToken)||'', tgBot: (notify&&notify.tgBot)||'', tgOffset: (notify&&notify.tgOffset)||0 };
+  finance = { salaryPercent: (finance && finance.salaryPercent!=null) ? finance.salaryPercent : 40 };
+  if(!services.length && localStorage.getItem('asl_services')===null) services = DEFAULT_SERVICES();
+  appts.forEach(a => {
+    if(a.status==='new' || a.status==='progress') a.status='confirmed';
+    if(!['confirmed','done','cancelled'].includes(a.status)) a.status='confirmed';
+    if(a.master===undefined) a.master='';
+    if(!a.clientId){ const c=clients.find(x=>x.name===a.client); if(c) a.clientId=c.id; }
+    if(a.car===undefined && a.plate) a.car=a.plate;
+    if(a.price===undefined) a.price=0;
+    if(!Array.isArray(a.items)) a.items = a.service ? [{name:a.service, price:Number(a.price)||0, duration:Number(a.duration)||0}] : [];
+    if(a.duration===undefined) a.duration = a.items.reduce((s,it)=>s+(Number(it.duration)||0),0);
+  });
+  cars.forEach(c => {
+    if(c.mileage===undefined)     c.mileage = 0;
+    if(c.oilInterval===undefined) c.oilInterval = (REGS[c.model] ? REGS[c.model].oil : 15000);
+    if(c.toInterval===undefined)  c.toInterval  = (REGS[c.model] ? REGS[c.model].to  : 15000);
+    if(c.nextOilKm===undefined)   c.nextOilKm = c.oilInterval ? (Number(c.mileage)||0) + Number(c.oilInterval) : null;
+    if(c.nextTOKm===undefined)    c.nextTOKm  = c.toInterval  ? (Number(c.mileage)||0) + Number(c.toInterval)  : null;
+  });
+  clients.forEach(c => {
+    if(c.carIds===undefined){ c.carIds = cars.filter(car => car.owner && c.name && car.owner===c.name).map(car=>car.id); }
+    if(c.notify){ if(c.tgChatId===undefined && c.notify.tgId && /^-?\d+$/.test(String(c.notify.tgId))) c.tgChatId = c.notify.tgId; delete c.notify; }
+    if(c.tgChatId===undefined) c.tgChatId = '';
+    if(c.notes===undefined) c.notes='';
+  });
+  if(!Array.isArray(masters) || !masters.length) masters=['Алексей Смирнов','Дмитрий Орлов','Виктор Кузьмин'];
+}
+
+/* ====================== ХРАНЕНИЕ: localStorage + IndexedDB + Supabase ====================== */
+function mirrorLocal(){
+  DB.set('clients',clients); DB.set('appointments',appts); DB.set('cars',cars); DB.set('masters',masters);
+  DB.set('notify',notify); DB.set('incomes',incomes); DB.set('expenses',expenses); DB.set('finance',finance); DB.set('services',services);
+}
+/* при каждом изменении: локальный кэш + IndexedDB + отложенная выгрузка в Supabase */
+function saveAll(){ mirrorLocal(); idbSaveState(); schedulePush(); }
+
+function snapshot(){ return {clients,appts,cars,masters,notify,incomes,expenses,finance,services}; }
+function applyState(s){
+  if(!s) return;
+  if(Array.isArray(s.clients)) clients=s.clients;
+  if(Array.isArray(s.appts)) appts=s.appts;
+  if(Array.isArray(s.cars)) cars=s.cars;
+  if(Array.isArray(s.masters)) masters=s.masters;
+  if(s.notify) notify=s.notify;
+  if(Array.isArray(s.incomes)) incomes=s.incomes;
+  if(Array.isArray(s.expenses)) expenses=s.expenses;
+  if(s.finance) finance=s.finance;
+  if(Array.isArray(s.services)) services=s.services;
+}
+
+/* ----- IndexedDB (офлайн-кэш на устройстве) ----- */
+const IDB_NAME='autoservice_lite', IDB_STORE='kv';
+function idbOpen(){ return new Promise((res,rej)=>{ let r; try{ r=indexedDB.open(IDB_NAME,1); }catch(e){ rej(e); return; }
+  r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains(IDB_STORE)) r.result.createObjectStore(IDB_STORE); };
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function idbSaveState(){ try{ const db=await idbOpen(); const tx=db.transaction(IDB_STORE,'readwrite'); tx.objectStore(IDB_STORE).put(snapshot(),'state'); tx.oncomplete=()=>db.close(); }catch(e){ console.warn('IDB save:',e); } }
+async function idbLoadState(){ try{ const db=await idbOpen(); return await new Promise(res=>{ const tx=db.transaction(IDB_STORE,'readonly'); const rq=tx.objectStore(IDB_STORE).get('state'); rq.onsuccess=()=>{ db.close(); res(rq.result||null); }; rq.onerror=()=>{ db.close(); res(null); }; }); }catch(e){ console.warn('IDB load:',e); return null; } }
+
+/* ----- Supabase (облачная БД через REST/PostgREST) ----- */
+let supa = DB.get('supa', {url:'', key:'', pending:false});
+function supaConfigured(){ return !!(supa.url && supa.key); }
+function supaBase(){ return (supa.url||'').replace(/\/+$/,''); }
+function supaHeaders(extra){ return Object.assign({apikey:supa.key, Authorization:'Bearer '+supa.key, 'Content-Type':'application/json'}, extra||{}); }
+function markPending(){ supa.pending=true; DB.set('supa',supa); }
+async function supaSelect(table){
+  const res = await fetch(`${supaBase()}/rest/v1/${table}?select=*`, {headers:supaHeaders()});
+  if(!res.ok) throw new Error(`${table}: HTTP ${res.status} ${await res.text().catch(()=>'')}`);
+  return res.json();
+}
+async function supaUpsert(table, rows){
+  if(!rows.length) return;
+  const res = await fetch(`${supaBase()}/rest/v1/${table}`, {method:'POST', headers:supaHeaders({Prefer:'resolution=merge-duplicates,return=minimal'}), body:JSON.stringify(rows)});
+  if(!res.ok) throw new Error(`${table}: HTTP ${res.status} ${await res.text().catch(()=>'')}`);
+}
+async function supaDelete(table, id){
+  if(!supaConfigured() || !navigator.onLine){ markPending(); return; }
+  try{ await fetch(`${supaBase()}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, {method:'DELETE', headers:supaHeaders({Prefer:'return=minimal'})}); }
+  catch(e){ console.warn('supaDelete',e); markPending(); }
+}
+
+/* мэппинг: внутренняя модель ⇄ строки Supabase */
+function splitModel(m){ m=(m||'').trim(); const i=m.indexOf(' '); return i<0?{brand:m, model:''}:{brand:m.slice(0,i), model:m.slice(i+1)}; }
+function joinModel(brand, model){ return [brand,model].filter(Boolean).join(' ').trim(); }
+function carOwnerId(c){ const cl=clients.find(x=>Array.isArray(x.carIds)&&x.carIds.includes(c.id)) || clients.find(x=>x.name===c.owner); return cl?cl.id:(c.clientId||null); }
+function clientToRow(c){ return {id:c.id, name:c.name||'', phone:c.phone||'', telegram_id:c.tgChatId?String(c.tgChatId):null, notes:c.notes||null}; }
+function carToRow(c){ const sm=splitModel(c.model); return {id:c.id, client_id:carOwnerId(c), brand:sm.brand, model:sm.model, plate:c.plate||'', mileage:Number(c.mileage)||0, oil_interval:Number(c.oilInterval)||0, to_interval:Number(c.toInterval)||0}; }
+function bookingToRow(a){ return {id:a.id, client_id:a.clientId||null, car_id:a.carId||null, services:(a.items||[]), total_price:Number(a.price)||0, date:a.date||null, time:a.time||null, master:a.master||'', status:a.status||'confirmed'}; }
+function serviceToRow(s){ return {id:s.id, name:s.name||'', price:Number(s.price)||0, duration:Number(s.duration)||0}; }
+function expenseToRow(e){ return {id:e.id, category:e.category||'', amount:Number(e.amount)||0, date:e.date||null, comment:e.note||null}; }
+
+async function supaPushAll(){
+  await Promise.all([
+    supaUpsert('clients',  clients.map(clientToRow)),
+    supaUpsert('cars',     cars.map(carToRow)),
+    supaUpsert('bookings', appts.map(bookingToRow)),
+    supaUpsert('services', services.map(serviceToRow)),
+    supaUpsert('expenses', expenses.map(expenseToRow)),
+  ]);
+}
+let pushTimer=null;
+function schedulePush(){
+  if(!supaConfigured()) return;
+  if(!navigator.onLine){ markPending(); return; }
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(()=>{ supaPushAll().then(()=>{ if(supa.pending){ supa.pending=false; DB.set('supa',supa); renderSettings(); } }).catch(e=>{ console.warn('push:',e); markPending(); }); }, 1500);
+}
+async function fetchAll(){
+  const [cl,cr,bk,sv,ex] = await Promise.all([supaSelect('clients'),supaSelect('cars'),supaSelect('bookings'),supaSelect('services'),supaSelect('expenses')]);
+  return {clients:cl, cars:cr, bookings:bk, services:sv, expenses:ex};
+}
+/* применяем данные из облака к локальной модели (масштаб: 5 таблиц; мастера/доходы/финансы/Telegram — локально) */
+function applyRemote(r){
+  services = (r.services||[]).map(s=>({id:s.id, name:s.name||'', price:Number(s.price)||0, duration:Number(s.duration)||0, category:''}));
+  clients  = (r.clients||[]).map(c=>({id:c.id, name:c.name||'', phone:c.phone||'', tgChatId:c.telegram_id||'', notes:c.notes||'', carIds:[]}));
+  cars     = (r.cars||[]).map(c=>{ const model=joinModel(c.brand,c.model); const oil=Number(c.oil_interval)||15000, to=Number(c.to_interval)||15000, mil=Number(c.mileage)||0;
+    return {id:c.id, model, plate:c.plate||'', clientId:c.client_id||'', owner:'', mileage:mil, oilInterval:oil, toInterval:to, nextOilKm:mil+oil, nextTOKm:mil+to}; });
+  cars.forEach(car=>{ const cl=clients.find(x=>x.id===car.clientId); if(cl){ car.owner=cl.name; (cl.carIds=cl.carIds||[]).push(car.id); } });
+  appts = (r.bookings||[]).map(b=>{ let items=b.services; if(typeof items==='string'){ try{items=JSON.parse(items);}catch(e){items=[];} } if(!Array.isArray(items)) items=[];
+    const cl=clients.find(x=>x.id===b.client_id), car=cars.find(x=>x.id===b.car_id);
+    return {id:b.id, clientId:b.client_id||'', client:cl?cl.name:'', carId:b.car_id||'', car:car?carLabel(car):'', items, service:items.map(i=>i.name).join(', '), price:Number(b.total_price)||0, duration:items.reduce((s,i)=>s+(Number(i.duration)||0),0), master:b.master||'', date:b.date||'', time:b.time||'', status:b.status||'confirmed'}; });
+  expenses = (r.expenses||[]).map(e=>({id:e.id, category:e.category||'', amount:Number(e.amount)||0, date:e.date||'', note:e.comment||''}));
+  mirrorLocal();
+}
+async function forceSync(silent){
+  if(!supaConfigured()){ if(!silent) toast('⚠️ Укажите Supabase URL и anon key в настройках','err'); return; }
+  if(!navigator.onLine){ markPending(); if(!silent) toast('📴 Нет интернета — синхронизируем при подключении','err'); renderSettings(); return; }
+  try{
+    const remote = await fetchAll();
+    const empty = !remote.clients.length && !remote.cars.length && !remote.bookings.length && !remote.services.length && !remote.expenses.length;
+    if(empty){
+      await supaPushAll();
+      if(!silent) toast('☁️ Локальные данные выгружены в Supabase','ok');
+    } else {
+      applyRemote(remote); idbSaveState(); reRenderAll();
+      if(!silent) toast('☁️ Данные загружены из Supabase','ok');
+    }
+    supa.pending=false; DB.set('supa',supa); renderSettings();
+  }catch(e){ if(!silent) toast('❌ Ошибка синхронизации: '+esc(e.message||e),'err'); console.warn('forceSync',e); }
+}
+function reRenderAll(){
+  const active = document.querySelector('.page.active');
+  const id = active ? active.id.replace('page-','') : 'home';
+  renderHome(); go(id);
+}
+function saveSupa(){
+  supa.url = document.getElementById('supaUrl').value.trim();
+  supa.key = document.getElementById('supaKey').value.trim();
+  DB.set('supa', supa); renderSettings();
+}
+function firstRunConnect(){
+  supa.url = document.getElementById('frUrl').value.trim();
+  supa.key = document.getElementById('frKey').value.trim();
+  DB.set('supa', supa);
+  try{ bootstrap.Modal.getInstance('#firstRunModal').hide(); }catch(e){}
+  renderSettings();
+  if(supaConfigured()) forceSync(false); else toast('Заполните оба поля или работайте офлайн','err');
+}
+function firstRunSkip(){ try{ bootstrap.Modal.getInstance('#firstRunModal').hide(); }catch(e){} }
+window.addEventListener('online', ()=>{ if(supaConfigured() && supa.pending) forceSync(true); });
+
+/* ====================== НАВИГАЦИЯ ====================== */
+function go(page){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-go, .bottom-nav button').forEach(el =>
+    el.classList.toggle('active', el.dataset.page === page));
+  window.scrollTo({top:0, behavior:'smooth'});
+  if(page==='home') renderHome();
+  if(page==='clients') renderClients();
+  if(page==='appointments'){ renderCalendar(); renderAppointments(); }
+  if(page==='cars') renderCars();
+  if(page==='pricelist') renderPricelist();
+  if(page==='finance') renderFinance();
+  if(page==='reports') renderReports();
+  if(page==='settings') renderSettings();
+  const nav = document.getElementById('topnav');
+  if(nav.classList.contains('show')) bootstrap.Collapse.getOrCreateInstance(nav).hide();
+}
+
+/* ====================== ГЛАВНАЯ ====================== */
+function renderHome(){
+  const h = new Date().getHours();
+  const hi = h<6?'Доброй ночи':h<12?'Доброе утро':h<18?'Добрый день':'Добрый вечер';
+  document.getElementById('greeting').textContent = `${hi}, мастер! 👋`;
+  document.getElementById('todayStr').textContent =
+    new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('statClients').textContent = clients.length;
+  document.getElementById('statCars').textContent = cars.length;
+  document.getElementById('statToday').textContent =
+    appts.filter(a => a.date === todayISO() && a.status !== 'cancelled').length;
+  document.getElementById('statReminders').textContent = collectReminders().length;
+  renderReminders();
+}
+function collectReminders(){
+  const out=[];
+  cars.forEach(c=>{
+    const m = Number(c.mileage)||0;
+    if(c.nextOilKm!=null && c.oilInterval){ const rem=c.nextOilKm-m; if(rem<=REMINDER_KM) out.push({car:c, kind:'Замена масла', rem}); }
+    if(c.nextTOKm!=null && c.toInterval){  const rem=c.nextTOKm-m;  if(rem<=REMINDER_KM) out.push({car:c, kind:'Плановое ТО', rem}); }
+  });
+  out.sort((a,b)=>a.rem-b.rem);
+  return out;
+}
+function renderReminders(){
+  const box = document.getElementById('remindersBlock');
+  const list = collectReminders();
+  if(!list.length){
+    box.innerHTML = cars.length
+      ? `<div class="card p-3 mb-4" style="border-color:#1f3d2b;"><span class="text-success"><i class="bi bi-check-circle-fill me-2"></i>Все автомобили обслужены вовремя — напоминаний нет.</span></div>`
+      : '';
+    return;
+  }
+  box.innerHTML = `
+    <div class="card p-3 mb-4" style="border-color:#5a4a00;">
+      <div class="fw-bold mb-2" style="color:var(--accent-2)"><i class="bi bi-bell-fill me-2"></i>Напоминания о ТО — ${list.length}</div>
+      <div class="vstack gap-2">
+        ${list.map(r=>{
+          const overdue = r.rem < 0;
+          return `<div class="list-item p-2 ps-3 d-flex justify-content-between align-items-center gap-2" style="cursor:pointer" onclick="go('cars')">
+            <div class="overflow-hidden">
+              <span class="fw-semibold">${esc(r.car.model)}</span>
+              ${r.car.plate?`<span class="badge text-bg-dark ms-1">${esc(r.car.plate)}</span>`:''}
+              <div class="small text-secondary text-truncate">${r.kind}${r.car.owner?` · ${esc(r.car.owner)}`:''}</div>
+            </div>
+            <span class="badge ${overdue?'text-bg-danger':'text-bg-warning'} flex-shrink-0">${overdue?`просрочено ${fmt(-r.rem)} км`:`через ${fmt(r.rem)} км`}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+/* ====================== КЛИЕНТЫ ====================== */
+function renderClients(){
+  const q = (document.getElementById('clientSearch').value||'').toLowerCase().trim();
+  const list = clients.filter(c => {
+    if(!q) return true;
+    if(c.name.toLowerCase().includes(q)) return true;
+    const own = (c.carIds||[]).map(id=>cars.find(x=>x.id===id)).filter(Boolean);
+    return own.some(car => (car.plate||'').toLowerCase().includes(q) || (car.model||'').toLowerCase().includes(q));
+  });
+  const box = document.getElementById('clientsList');
+  if(!list.length){
+    box.innerHTML = `<div class="text-center empty py-5"><i class="bi bi-people fs-1 d-block mb-2"></i>${clients.length?'Ничего не найдено':'Пока нет клиентов. Нажмите «Добавить клиента».'}</div>`;
+    return;
+  }
+  box.innerHTML = list.map(c => `
+    <div class="list-item p-3">
+      <div class="d-flex justify-content-between align-items-start gap-2">
+        <div class="overflow-hidden">
+          <div class="fw-bold text-truncate">${esc(c.name)} ${tgStatusBadge(c)}</div>
+          <div class="small text-secondary"><i class="bi bi-telephone me-1"></i>${esc(c.phone)||'—'}</div>
+          ${attachedCarsHtml(c)}
+          <button class="btn btn-sm btn-outline-warning mt-2" onclick="openClientCarForm('${c.id}')"><i class="bi bi-plus-lg me-1"></i>Добавить автомобиль</button>
+        </div>
+        <div class="btn-group flex-shrink-0">
+          <button class="btn btn-outline-secondary" onclick="openClientForm('${c.id}')"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-outline-danger" onclick="delClient('${c.id}')"><i class="bi bi-trash3"></i></button>
+        </div>
+      </div>
+      ${clientTgButtons(c)}
+    </div>`).join('');
+}
+function openClientForm(id){
+  const c = clients.find(x=>x.id===id) || {};
+  document.getElementById('clientModalTitle').textContent = id?'Редактировать клиента':'Новый клиент';
+  clientId.value=c.id||''; clientName.value=c.name||''; clientPhone.value=c.phone||'';
+  document.getElementById('clientNotes').value = c.notes||'';
+  new bootstrap.Modal('#clientModal').show();
+}
+function saveClient(e){
+  e.preventDefault();
+  const id = clientId.value;
+  const data = {name:clientName.value.trim(), phone:clientPhone.value.trim(), notes:document.getElementById('clientNotes').value.trim()};
+  let client;
+  if(id){ client = clients.find(x=>x.id===id); Object.assign(client, data); }
+  else { client = {id:uid(), ...data, carIds:[], tgChatId:''}; clients.unshift(client); }
+  // держим поле «владелец» у привязанных авто в актуальном состоянии
+  (client.carIds||[]).forEach(cid => { const car=cars.find(x=>x.id===cid); if(car) car.owner = client.name; });
+  saveAll(); bootstrap.Modal.getInstance('#clientModal').hide();
+  renderClients(); renderCars(); renderHome();
+}
+function delClient(id){
+  const c = clients.find(x=>x.id===id);
+  if(confirm(`Удалить клиента «${c.name}»?`)){ clients = clients.filter(x=>x.id!==id); supaDelete('clients', id); saveAll(); renderClients(); renderHome(); }
+}
+
+/* ===== Автомобили клиента ===== */
+function carLabel(car){ return `${car.model}${car.plate?` · ${car.plate}`:''}`; }
+function attachedCarsHtml(c){
+  const list = (Array.isArray(c.carIds)?c.carIds:[]).map(id=>cars.find(x=>x.id===id)).filter(Boolean);
+  if(!list.length) return '<div class="small text-secondary mt-1"><i class="bi bi-info-circle me-1"></i>Автомобили не добавлены</div>';
+  return `<div class="small mt-1">${list.map(car=>`<span class="badge text-bg-secondary me-1"><i class="bi bi-car-front me-1"></i>${esc(carLabel(car))}</span>`).join('')}</div>`;
+}
+/* добавление авто прямо из карточки клиента: марка (30 моделей), госномер, пробег */
+function openClientCarForm(clientId){
+  const c = clients.find(x=>x.id===clientId); if(!c) return;
+  document.getElementById('clientCarClientId').value = clientId;
+  document.getElementById('clientCarTitle').textContent = `Авто клиента: ${c.name}`;
+  document.getElementById('ccModelSelect').innerHTML =
+    '<option value="">— выберите марку и модель —</option>' +
+    Object.keys(REGS).map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('') +
+    '<option value="__custom__">✏️ Другая (ввести вручную)</option>';
+  document.getElementById('ccModelCustom').classList.add('d-none');
+  document.getElementById('ccModelCustom').value='';
+  document.getElementById('ccPlate').value='';
+  document.getElementById('ccMileage').value='';
+  new bootstrap.Modal('#clientCarModal').show();
+}
+function onCcModelChange(){
+  const v = document.getElementById('ccModelSelect').value;
+  document.getElementById('ccModelCustom').classList.toggle('d-none', v!=='__custom__');
+}
+function saveClientCar(e, again){
+  if(e) e.preventDefault();
+  const c = clients.find(x=>x.id===document.getElementById('clientCarClientId').value);
+  if(!c) return;
+  const selV = document.getElementById('ccModelSelect').value;
+  const model = selV==='__custom__' ? document.getElementById('ccModelCustom').value.trim() : selV;
+  if(!model){ alert('Выберите марку из списка или введите вручную.'); return; }
+  const plate   = document.getElementById('ccPlate').value.trim().toUpperCase();
+  const mileage = numv(document.getElementById('ccMileage').value);
+  const oil = REGS[model] ? REGS[model].oil : 15000;
+  const to  = REGS[model] ? REGS[model].to  : 15000;
+  const car = {id:uid(), model, plate, owner:c.name, mileage, oilInterval:oil, toInterval:to,
+    nextOilKm: mileage+oil, nextTOKm: mileage+to};
+  cars.unshift(car);
+  if(!Array.isArray(c.carIds)) c.carIds = [];
+  c.carIds.push(car.id);
+  saveAll();
+  if(again){
+    document.getElementById('ccModelSelect').value='';
+    document.getElementById('ccModelCustom').classList.add('d-none');
+    document.getElementById('ccModelCustom').value='';
+    document.getElementById('ccPlate').value='';
+    document.getElementById('ccMileage').value='';
+    document.getElementById('ccModelSelect').focus();
+    if(typeof toast==='function') toast(`✅ ${esc(car.model)}${car.plate?' · '+esc(car.plate):''} добавлен`,'ok');
+  } else {
+    bootstrap.Modal.getInstance('#clientCarModal').hide();
+  }
+  renderClients(); renderHome();
+  if(document.getElementById('page-cars').classList.contains('active')) renderCars();
+}
+
+/* ====================== ЗАПИСЬ: КАЛЕНДАРЬ ====================== */
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+let calY, calM, selectedDate = null;
+(function initCal(){ const d=new Date(); calY=d.getFullYear(); calM=d.getMonth(); })();
+
+function renderCalendar(){
+  document.getElementById('calTitle').textContent = `${MONTHS[calM]} ${calY}`;
+  const first = new Date(calY, calM, 1);
+  const startDow = (first.getDay() + 6) % 7;
+  const daysInMonth = new Date(calY, calM+1, 0).getDate();
+  const rows = Math.ceil((startDow + daysInMonth) / 7);
+  const total = rows * 7;
+  let html = '';
+  for(let i=0;i<total;i++){
+    const dt  = new Date(calY, calM, 1 - startDow + i);
+    const iso = isoFrom(dt.getFullYear(), dt.getMonth(), dt.getDate());
+    const cnt = appts.filter(a => a.date===iso && a.status!=='cancelled').length;
+    const cls = ['cal-cell',
+      dt.getMonth()!==calM ? 'other':'', iso===todayISO()?'today':'', iso===selectedDate?'selected':'']
+      .join(' ').replace(/\s+/g,' ').trim();
+    html += `<div class="${cls}" onclick="onCalendarDayClick('${iso}')">
+      <div class="d">${dt.getDate()}</div>${cnt? `<div class="cnt">${cnt}</div>`:''}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+function calNav(delta){ calM+=delta; if(calM<0){calM=11;calY--;} if(calM>11){calM=0;calY++;} renderCalendar(); }
+function calToday(){ const d=new Date(); calY=d.getFullYear(); calM=d.getMonth(); renderCalendar(); }
+function onCalendarDayClick(iso){ selectDay(iso); openApptForm(null, iso); }
+function selectDay(iso){
+  selectedDate = iso;
+  const dt = new Date(iso+'T00:00'); calY=dt.getFullYear(); calM=dt.getMonth();
+  document.getElementById('filterDate').value = iso;
+  renderCalendar(); renderAppointments();
+}
+function onFilterDate(){
+  const v = document.getElementById('filterDate').value;
+  if(v){ selectDay(v); } else { selectedDate=null; renderCalendar(); renderAppointments(); }
+}
+function clearDateFilter(){ selectedDate=null; document.getElementById('filterDate').value=''; renderCalendar(); renderAppointments(); }
+
+/* ====================== ЗАПИСЬ: СПИСОК ====================== */
+const STATUS = {
+  confirmed: {label:'Подтверждена', cls:'text-bg-primary'},
+  done:      {label:'Выполнена',    cls:'text-bg-success'},
+  cancelled: {label:'Отменена',     cls:'text-bg-secondary'}
+};
+function timeSlots(){ const out=[]; for(let h=9;h<=20;h++){ out.push(`${pad(h)}:00`); if(h<20) out.push(`${pad(h)}:30`); } return out; }
+function renderAppointments(){
+  const q  = (document.getElementById('apptSearch').value||'').toLowerCase().trim();
+  const fd = document.getElementById('filterDate').value;
+  const fs = document.getElementById('filterStatus').value;
+  const list = appts.filter(a =>
+      (!fd || a.date===fd) && (!fs || a.status===fs) &&
+      (!q  || a.client.toLowerCase().includes(q) || (a.service||'').toLowerCase().includes(q) ||
+              (a.car||'').toLowerCase().includes(q) || (a.master||'').toLowerCase().includes(q)))
+    .sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
+  const box = document.getElementById('apptList');
+  if(!list.length){
+    box.innerHTML = `<div class="text-center empty py-5"><i class="bi bi-calendar-x fs-1 d-block mb-2"></i>${appts.length?'Нет записей по выбранному фильтру':'Пока нет записей. Нажмите «Новая запись» или выберите дату в календаре.'}</div>`;
+    return;
+  }
+  box.innerHTML = list.map(a => {
+    const st = STATUS[a.status]||STATUS.confirmed;
+    const isToday = a.date===todayISO();
+    const dateStr = new Date(a.date+'T00:00').toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'short'});
+    return `
+    <div class="list-item p-3 ${a.status==='cancelled'?'cancelled':''}">
+      <div class="d-flex justify-content-between align-items-start gap-2">
+        <div class="overflow-hidden">
+          <div class="fw-bold text-truncate item-title">${esc(a.client)}
+            ${isToday && a.status!=='cancelled'?'<span class="badge text-bg-danger ms-1">сегодня</span>':''}</div>
+          <div class="small text-secondary">
+            <i class="bi bi-calendar3 me-1"></i>${dateStr}${a.time?` · <span class="accent-text fw-semibold">${esc(a.time)}</span>`:''}
+            ${a.master?` &nbsp;·&nbsp; <i class="bi bi-person-badge me-1"></i>${esc(a.master)}`:''}
+          </div>
+          ${a.car?`<div class="small mt-1"><i class="bi bi-car-front me-1"></i>${esc(a.car)}</div>`:''}
+          ${a.service?`<div class="small"><i class="bi bi-tools me-1 accent-text"></i>${esc(a.service)}</div>`:''}
+          ${(a.price||a.duration)?`<div class="small"><i class="bi bi-cash-coin me-1 text-success"></i>${money(a.price)}${a.duration?` · <i class="bi bi-clock me-1"></i>${durText(a.duration)}`:''}</div>`:''}
+        </div>
+        <span class="badge badge-status ${st.cls}">${st.label}</span>
+      </div>
+      <div class="d-flex justify-content-end gap-2 mt-2 flex-wrap">
+        ${a.status!=='done'      ? `<button class="btn btn-sm btn-outline-success" onclick="setStatus('${a.id}','done')"><i class="bi bi-check2 me-1"></i>Выполнена</button>`:''}
+        ${a.status!=='cancelled' ? `<button class="btn btn-sm btn-outline-warning" onclick="setStatus('${a.id}','cancelled')"><i class="bi bi-x-lg me-1"></i>Отменить</button>`:''}
+        <button class="btn btn-sm btn-outline-secondary" onclick="openApptForm('${a.id}')"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-sm btn-outline-danger" onclick="delAppt('${a.id}')"><i class="bi bi-trash3"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function setStatus(id, st){
+  const a=appts.find(x=>x.id===id); a.status=st; saveAll();
+  renderAppointments(); renderCalendar(); renderHome();
+  if(st==='done'){
+    const c = clients.find(x=>x.id===a.clientId);
+    if(c) notifyClient(c, msgReady(a,c)).then(sent=>{ if(sent.length) toast(`📨 «Авто готово» отправлено: ${esc(c.name)}`,'ok'); });
+  }
+}
+
+/* ===== Форма записи ===== */
+function fillClientSelect(val){
+  const sel = document.getElementById('apptClientId');
+  sel.innerHTML = '<option value="">— выберите клиента —</option>' +
+    clients.map(c => `<option value="${c.id}" ${c.id===val?'selected':''}>${esc(c.name)}</option>`).join('');
+  document.getElementById('apptNoClients').classList.toggle('d-none', clients.length>0);
+}
+function fillMasterSelect(val){
+  document.getElementById('apptMaster').innerHTML =
+    '<option value="">— не назначен —</option>' + masters.map(m => `<option ${m===val?'selected':''}>${esc(m)}</option>`).join('');
+}
+function fillTimeOptions(val){
+  const date=document.getElementById('apptDate').value, master=document.getElementById('apptMaster').value, editing=document.getElementById('apptId').value;
+  const taken = new Set(appts.filter(a => a.id!==editing && a.date===date && master && a.master===master && a.status!=='cancelled').map(a=>a.time));
+  document.getElementById('apptTime').innerHTML = timeSlots().map(t => {
+    const isTaken = taken.has(t) && t!==val;
+    return `<option value="${t}" ${t===val?'selected':''} ${isTaken?'disabled':''}>${t}${isTaken?' — занято':''}</option>`;
+  }).join('');
+}
+function onApptClientChange(){
+  const c = clients.find(x=>x.id===document.getElementById('apptClientId').value);
+  fillApptCarSelect(c, '');
+}
+function fillApptCarSelect(client, selCarId){
+  const sel = document.getElementById('apptCarSelect');
+  const msg = document.getElementById('apptNoCar');
+  if(!client){
+    sel.innerHTML = '<option value="">— сначала выберите клиента —</option>';
+    sel.disabled = true; msg.classList.add('d-none'); return;
+  }
+  const carsOf = (client.carIds||[]).map(id=>cars.find(x=>x.id===id)).filter(Boolean);
+  if(!carsOf.length){
+    sel.innerHTML = '<option value="">— нет автомобилей —</option>';
+    sel.disabled = true; msg.classList.remove('d-none'); return;
+  }
+  sel.disabled = false; msg.classList.add('d-none');
+  sel.innerHTML = carsOf.map(car=>`<option value="${car.id}" ${car.id===selCarId?'selected':''}>${esc(carLabel(car))}</option>`).join('');
+}
+function openApptForm(id, presetDate){
+  const a = appts.find(x=>x.id===id) || {};
+  document.getElementById('apptModalTitle').textContent = id?'Редактировать запись':'Новая запись';
+  document.getElementById('apptId').value = a.id||'';
+  fillClientSelect(a.clientId||'');
+  fillMasterSelect(a.master||'');
+  fillApptServiceSelect();
+  apptItems = Array.isArray(a.items) ? a.items.map(it=>({name:it.name, price:Number(it.price)||0, duration:Number(it.duration)||0})) : [];
+  renderApptItems();
+  const client = clients.find(x=>x.id===(a.clientId||''));
+  let selCar = a.carId || '';
+  if(!selCar && a.car && client){ const m=(client.carIds||[]).map(id=>cars.find(x=>x.id===id)).filter(Boolean).find(cc=>carLabel(cc)===a.car); if(m) selCar=m.id; }
+  fillApptCarSelect(client, selCar);
+  document.getElementById('apptDate').value    = a.date || presetDate || selectedDate || document.getElementById('filterDate').value || todayISO();
+  fillTimeOptions(a.time||'');
+  document.getElementById('apptStatus').value  = a.status||'confirmed';
+  new bootstrap.Modal('#apptModal').show();
+}
+function saveAppt(e){
+  e.preventDefault();
+  const id = document.getElementById('apptId').value;
+  const client = clients.find(c => c.id===document.getElementById('apptClientId').value);
+  const carObj = cars.find(x=>x.id===document.getElementById('apptCarSelect').value);
+  const totalPrice = apptItems.reduce((s,it)=>s+(Number(it.price)||0),0);
+  const totalDur   = apptItems.reduce((s,it)=>s+(Number(it.duration)||0),0);
+  const data = {
+    clientId: document.getElementById('apptClientId').value,
+    client:   client ? client.name : '',
+    carId:    carObj ? carObj.id : '',
+    car:      carObj ? carLabel(carObj) : '',
+    items:    apptItems.slice(),
+    service:  apptItems.map(it=>it.name).join(', '),
+    price:    totalPrice,
+    duration: totalDur,
+    master:   document.getElementById('apptMaster').value,
+    date:     document.getElementById('apptDate').value,
+    time:     document.getElementById('apptTime').value,
+    status:   document.getElementById('apptStatus').value
+  };
+  if(id){ Object.assign(appts.find(x=>x.id===id), data); }
+  else { appts.unshift({id:uid(), ...data}); }
+  saveAll(); bootstrap.Modal.getInstance('#apptModal').hide();
+  renderAppointments(); renderCalendar(); renderHome();
+}
+function delAppt(id){ if(confirm('Удалить запись?')){ appts=appts.filter(x=>x.id!==id); supaDelete('bookings', id); saveAll(); renderAppointments(); renderCalendar(); renderHome(); } }
+
+/* ===== Услуги в записи (несколько; авто-сумма и длительность) ===== */
+let apptItems = [];
+function fillApptServiceSelect(){
+  const sel = document.getElementById('apptServiceSelect');
+  sel.innerHTML = (services.length
+    ? '<option value="">— выберите услугу из прайса —</option>' + services.map(s=>`<option value="${s.id}">${esc(s.name)} — ${money(s.price)} · ${s.duration||0} мин</option>`).join('')
+    : '<option value="">Прайс-лист пуст — добавьте услуги</option>')
+    + '<option value="__custom__">✏️ Другая услуга (вручную)</option>';
+}
+function addApptService(){
+  const v = document.getElementById('apptServiceSelect').value;
+  if(v==='__custom__'){
+    const name = prompt('Название услуги:'); if(name==null || !name.trim()) return;
+    apptItems.push({name:name.trim(), price:numv(prompt('Цена, ₽:', '0')), duration:numv(prompt('Длительность, мин:', '30'))});
+  } else if(v){
+    const s = services.find(x=>x.id===v); if(!s) return;
+    apptItems.push({name:s.name, price:Number(s.price)||0, duration:Number(s.duration)||0});
+  } else return;
+  renderApptItems();
+}
+function removeApptItem(idx){ apptItems.splice(idx,1); renderApptItems(); }
+function renderApptItems(){
+  const box = document.getElementById('apptItems');
+  box.innerHTML = apptItems.length
+    ? apptItems.map((it,i)=>`<div class="list-item p-2 ps-3 d-flex justify-content-between align-items-center gap-2">
+        <div class="overflow-hidden"><div class="text-truncate">${esc(it.name)}</div>
+          <div class="small text-secondary">${money(it.price)} · ${it.duration||0} мин</div></div>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeApptItem(${i})"><i class="bi bi-x-lg"></i></button>
+      </div>`).join('')
+    : '<div class="empty small">Услуги не добавлены</div>';
+  document.getElementById('apptTotalPrice').textContent = money(apptItems.reduce((s,it)=>s+(Number(it.price)||0),0));
+  document.getElementById('apptTotalDur').textContent   = durText(apptItems.reduce((s,it)=>s+(Number(it.duration)||0),0));
+}
+
+/* ===== Мастера ===== */
+function openMasters(){ renderMastersList(); new bootstrap.Modal('#mastersModal').show(); }
+function renderMastersList(){
+  document.getElementById('mastersList').innerHTML = masters.length
+    ? masters.map((m,i)=>`<div class="list-item p-2 ps-3 d-flex justify-content-between align-items-center"><span>${esc(m)}</span><button class="btn btn-sm btn-outline-danger" onclick="delMaster(${i})"><i class="bi bi-trash3"></i></button></div>`).join('')
+    : '<div class="empty small text-center py-2">Список пуст</div>';
+}
+function addMaster(){ const inp=document.getElementById('newMaster'); const v=inp.value.trim(); if(!v)return; if(!masters.includes(v))masters.push(v); inp.value=''; saveAll(); renderMastersList(); }
+function delMaster(i){ masters.splice(i,1); saveAll(); renderMastersList(); }
+
+/* ====================== АВТОМОБИЛИ ====================== */
+function refreshClientNames(){
+  document.getElementById('clientNames').innerHTML = clients.map(c=>`<option value="${esc(c.name)}">`).join('');
+}
+function serviceLine(label, nextKm, m){
+  if(nextKm==null) return '';
+  const rem = nextKm - m;
+  const overdue = rem < 0, due = rem <= REMINDER_KM;
+  const cls  = overdue ? 'text-bg-danger' : (due ? 'text-bg-warning' : 'text-bg-secondary');
+  const icon = overdue ? 'exclamation-triangle-fill' : (due ? 'bell-fill' : 'check2');
+  const txt  = overdue ? `просрочено на ${fmt(-rem)} км` : `осталось ${fmt(rem)} км`;
+  return `<div class="small mt-1">${label}: при <b>${fmt(nextKm)} км</b>
+    <span class="badge ${cls}"><i class="bi bi-${icon} me-1"></i>${txt}</span></div>`;
+}
+function renderCars(){
+  const q=(document.getElementById('carSearch').value||'').toLowerCase().trim();
+  const list=cars.filter(c=>!q || c.model.toLowerCase().includes(q) || (c.plate||'').toLowerCase().includes(q) || (c.owner||'').toLowerCase().includes(q));
+  const box=document.getElementById('carsList');
+  if(!list.length){
+    box.innerHTML=`<div class="text-center empty py-5"><i class="bi bi-car-front fs-1 d-block mb-2"></i>${cars.length?'Ничего не найдено':'Пока нет автомобилей. Нажмите «Добавить авто».'}</div>`;
+    return;
+  }
+  box.innerHTML=list.map(c=>{
+    const m = Number(c.mileage)||0;
+    return `
+    <div class="list-item p-3">
+      <div class="d-flex justify-content-between align-items-start gap-2">
+        <div class="overflow-hidden">
+          <div class="fw-bold text-truncate">${esc(c.model)}</div>
+          <div class="small text-secondary">
+            ${c.plate?`<span class="badge text-bg-dark">${esc(c.plate)}</span>`:''}
+            ${c.owner?` &nbsp;·&nbsp; <i class="bi bi-person me-1"></i>${esc(c.owner)}`:''}
+          </div>
+          <div class="small mt-1"><i class="bi bi-speedometer2 me-1 accent-text"></i>Пробег: <b>${fmt(m)} км</b></div>
+          ${serviceLine('Замена масла', c.nextOilKm, m)}
+          ${serviceLine('ТО', c.nextTOKm, m)}
+        </div>
+        <div class="btn-group flex-shrink-0">
+          <button class="btn btn-outline-secondary" onclick="openCarForm('${c.id}')"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-outline-danger" onclick="delCar('${c.id}')"><i class="bi bi-trash3"></i></button>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end gap-2 mt-2 flex-wrap">
+        <button class="btn btn-sm btn-outline-success" onclick="markServiceDone('${c.id}','oil')"><i class="bi bi-droplet me-1"></i>Масло заменено</button>
+        <button class="btn btn-sm btn-outline-info" onclick="markServiceDone('${c.id}','to')"><i class="bi bi-tools me-1"></i>ТО пройдено</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function populateCarModels(){
+  document.getElementById('carModelSelect').innerHTML =
+    '<option value="__custom__">✏️ Ручной ввод (другая модель)</option>' +
+    '<option value="">— или выберите модель из списка —</option>' +
+    Object.keys(REGS).map(m=>`<option value="${esc(m)}">${esc(m)} (масло ${fmt(REGS[m].oil)} / ТО ${fmt(REGS[m].to)} км)</option>`).join('');
+}
+function onCarModelChange(){
+  const sel = document.getElementById('carModelSelect').value;
+  const custom = document.getElementById('carModelCustom');
+  if(sel==='__custom__'){ custom.classList.remove('d-none'); custom.focus(); }
+  else {
+    custom.classList.add('d-none'); custom.value='';
+    if(sel && REGS[sel]){
+      document.getElementById('carOilInterval').value = REGS[sel].oil;
+      document.getElementById('carToInterval').value  = REGS[sel].to;
+    }
+  }
+}
+function openCarForm(id){
+  refreshClientNames();
+  populateCarModels();
+  const c = cars.find(x=>x.id===id) || {};
+  document.getElementById('carModalTitle').textContent = id?'Редактировать авто':'Новый автомобиль';
+  document.getElementById('carId').value = c.id||'';
+  const sel = document.getElementById('carModelSelect');
+  const custom = document.getElementById('carModelCustom');
+  if(c.model && REGS[c.model]){ sel.value=c.model; custom.classList.add('d-none'); custom.value=''; }
+  else if(c.model){ sel.value='__custom__'; custom.classList.remove('d-none'); custom.value=c.model; }
+  else { sel.value=''; custom.classList.add('d-none'); custom.value=''; }
+  document.getElementById('carPlate').value = c.plate||'';
+  document.getElementById('carOwner').value = c.owner||'';
+  document.getElementById('carMileage').value     = (c.mileage!=null && c.mileage!=='')?c.mileage:'';
+  document.getElementById('carOilInterval').value = (c.oilInterval!=null)?c.oilInterval:(c.model&&REGS[c.model]?REGS[c.model].oil:'');
+  document.getElementById('carToInterval').value  = (c.toInterval!=null) ?c.toInterval :(c.model&&REGS[c.model]?REGS[c.model].to :'');
+  new bootstrap.Modal('#carModal').show();
+}
+function saveCar(e){
+  e.preventDefault();
+  const id  = document.getElementById('carId').value;
+  const selV= document.getElementById('carModelSelect').value;
+  const model = selV==='__custom__' ? document.getElementById('carModelCustom').value.trim() : selV;
+  if(!model){ alert('Выберите модель из списка или введите её вручную.'); return; }
+  const mileage     = numv(document.getElementById('carMileage').value);
+  const oilInterval = numv(document.getElementById('carOilInterval').value);
+  const toInterval  = numv(document.getElementById('carToInterval').value);
+  const base = {
+    model,
+    plate: document.getElementById('carPlate').value.trim().toUpperCase(),
+    owner: document.getElementById('carOwner').value.trim(),
+    mileage, oilInterval, toInterval
+  };
+  if(id){
+    const car = cars.find(x=>x.id===id);
+    base.nextOilKm = (car.nextOilKm!=null) ? car.nextOilKm : (oilInterval ? mileage+oilInterval : null);
+    base.nextTOKm  = (car.nextTOKm!=null)  ? car.nextTOKm  : (toInterval  ? mileage+toInterval  : null);
+    Object.assign(car, base);
+  } else {
+    base.nextOilKm = oilInterval ? mileage + oilInterval : null;
+    base.nextTOKm  = toInterval  ? mileage + toInterval  : null;
+    cars.unshift({id:uid(), ...base});
+  }
+  saveAll(); bootstrap.Modal.getInstance('#carModal').hide();
+  renderCars(); renderHome();
+}
+function markServiceDone(id, type){
+  const c = cars.find(x=>x.id===id);
+  const cur = Number(c.mileage)||0;
+  if(type==='oil'){ c.nextOilKm = cur + (Number(c.oilInterval)||0); }
+  else { c.nextTOKm = cur + (Number(c.toInterval)||0); }
+  saveAll(); renderCars(); renderHome();
+}
+function delCar(id){ if(confirm('Удалить автомобиль?')){ cars=cars.filter(x=>x.id!==id); clients.forEach(c=>{ if(Array.isArray(c.carIds)) c.carIds=c.carIds.filter(x=>x!==id); }); supaDelete('cars', id); saveAll(); renderCars(); renderHome(); } }
+
+/* ====================== TELEGRAM-УВЕДОМЛЕНИЯ ====================== */
+const SERVICE_NAME = 'Автосервис Lite';
+
+/* всплывающее сообщение */
+function toast(msg, type){
+  const wrap = document.getElementById('toastWrap');
+  const bg = {ok:'#16331f', err:'#3a1620'}[type] || '#161b22';
+  const el = document.createElement('div');
+  el.className = 'card p-3 w-100 small';
+  el.style.cssText = `border-color:#30363d;background:${bg};box-shadow:0 6px 24px rgba(0,0,0,.4);`;
+  el.innerHTML = msg;
+  wrap.appendChild(el);
+  setTimeout(() => { el.style.transition='opacity .4s'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 4500);
+}
+
+/* --- настройки --- */
+function renderSettings(){
+  document.getElementById('setTgToken').value = notify.tgToken||'';
+  document.getElementById('tgBotStatus').innerHTML = notify.tgBot
+    ? `<i class="bi bi-check-circle-fill text-success me-1"></i>Бот подключён: <b>@${esc(notify.tgBot)}</b>`
+    : '<span class="text-secondary"><i class="bi bi-dash-circle me-1"></i>Бот не проверен — нажмите «Проверить токен»</span>';
+  const su=document.getElementById('supaUrl'), sk=document.getElementById('supaKey'), ss=document.getElementById('supaStatus');
+  if(su) su.value = supa.url||'';
+  if(sk) sk.value = supa.key||'';
+  if(ss) ss.innerHTML = supaConfigured()
+    ? `<i class="bi bi-database-check text-success me-1"></i>Подключено к облаку${supa.pending?' · <span class="text-warning">ожидает синхронизации</span>':''}`
+    : '<i class="bi bi-database-x me-1"></i>Не подключено — работаете офлайн (данные на этом устройстве)';
+}
+function saveSettings(showToast){
+  const newTok = document.getElementById('setTgToken').value.trim();
+  if(newTok !== notify.tgToken){ notify.tgBot=''; notify.tgOffset=0; }  // токен сменился — сбрасываем бота и offset
+  notify.tgToken = newTok;
+  saveAll(); renderSettings();
+  if(showToast===true) toast('✅ Токен сохранён','ok');
+}
+
+/* --- вызов Telegram Bot API (поддерживает CORS, работает из браузера) --- */
+async function tgCall(method, params){
+  const res = await fetch(`https://api.telegram.org/bot${notify.tgToken}/${method}`, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(params||{})
+  });
+  const data = await res.json().catch(()=>({}));
+  if(!data.ok) throw new Error(data.description || ('HTTP '+res.status));
+  return data.result;
+}
+function sendTelegram(chatId, text){ return tgCall('sendMessage', {chat_id: chatId, text}); }
+
+/* --- проверка токена: getMe → имя бота --- */
+async function checkToken(){
+  saveSettings();
+  if(!notify.tgToken){ toast('⚠️ Введите токен бота','err'); return; }
+  try{
+    const me = await tgCall('getMe');
+    notify.tgBot = me.username; saveAll(); renderSettings();
+    toast(`✅ Токен рабочий. Бот: <b>@${esc(me.username)}</b>`,'ok');
+    syncTelegramUpdates(true);
+  }catch(e){ toast(`❌ Токен недействителен: ${esc(e.message)}`,'err'); }
+}
+
+/* --- подтянуть подключения клиентов (getUpdates → /start client_<id>) --- */
+async function syncTelegramUpdates(silent){
+  if(!notify.tgToken){ if(!silent) toast('⚠️ Введите токен бота','err'); return 0; }
+  let updates;
+  try{ updates = await tgCall('getUpdates', {offset: notify.tgOffset||0, timeout:0}); }
+  catch(e){ if(!silent) toast(`❌ Ошибка получения обновлений: ${esc(e.message)}`,'err'); return 0; }
+  let linked=0, off=notify.tgOffset||0;
+  updates.forEach(u=>{
+    if(u.update_id >= off) off = u.update_id + 1;
+    const msg = u.message; if(!msg || !msg.text) return;
+    const m = msg.text.match(/^\/start\s+client_(\S+)/);
+    if(m){
+      const c = clients.find(x=>x.id===m[1]);
+      if(c && c.tgChatId!==msg.chat.id){ c.tgChatId = msg.chat.id; linked++; }
+    }
+  });
+  notify.tgOffset = off; saveAll();
+  if(linked) renderClients();
+  if(!silent) toast(linked?`✅ Подключено клиентов: ${linked}`:'Новых подключений нет','ok');
+  return linked;
+}
+
+/* --- ссылка и текст для клиента --- */
+function tgLinkFor(client){ return notify.tgBot ? `https://t.me/${notify.tgBot}?start=client_${client.id}` : null; }
+function clientInviteText(link){
+  return `Здравствуйте! Чтобы получать напоминания о записи, готовности авто и сроках ТО, перейдите по ссылке и нажмите «Старт». Это займёт 20 секунд.\n👉 ${link}\nПосле подключения я буду присылать вам уведомления, чтобы вы ничего не забыли. Спасибо!`;
+}
+async function copyToClipboard(text){
+  try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); return true; } }catch(e){}
+  try{
+    const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    const ok=document.execCommand('copy'); ta.remove(); return ok;
+  }catch(e){ return false; }
+}
+function requireBot(){
+  if(!notify.tgToken){ toast('⚠️ Сначала введите токен бота в Настройках','err'); return false; }
+  if(!notify.tgBot){ toast('⚠️ Нажмите «Проверить токен» в Настройках — нужно имя бота','err'); return false; }
+  return true;
+}
+async function genTgLink(clientId){
+  const c = clients.find(x=>x.id===clientId); if(!c || !requireBot()) return;
+  const link = tgLinkFor(c);
+  const ok = await copyToClipboard(link);
+  toast(`🔗 Ссылка ${ok?'скопирована':'готова'}:<br><span class="text-secondary" style="word-break:break-all">${esc(link)}</span>`,'ok');
+}
+async function copyClientText(clientId){
+  const c = clients.find(x=>x.id===clientId); if(!c || !requireBot()) return;
+  const text = clientInviteText(tgLinkFor(c));
+  const ok = await copyToClipboard(text);
+  toast(ok?'✅ Текст для клиента скопирован — вставьте в WhatsApp':'⚠️ Скопировать не удалось, выделите вручную','ok');
+}
+/* копирование шаблона со страницы «Помощь» */
+async function copyHelpClientText(){
+  const text = 'Здравствуйте! Чтобы получать напоминания о записи и ТО, перейдите по ссылке и нажмите «Старт»: [ссылка]';
+  const ok = await copyToClipboard(text);
+  toast(ok?'✅ Текст скопирован — вставьте ссылку клиента и отправьте':'⚠️ Скопировать не удалось, выделите вручную','ok');
+}
+async function manualSendTg(clientId){
+  const c = clients.find(x=>x.id===clientId); if(!c) return;
+  if(!notify.tgToken){ toast('⚠️ Введите токен бота в Настройках','err'); return; }
+  if(!c.tgChatId){ toast('⚠️ Клиент ещё не подключился к боту','err'); return; }
+  const text = prompt(`Сообщение для ${c.name} (Telegram):`, `Здравствуйте, ${c.name}! `);
+  if(text==null || !text.trim()) return;
+  try{ await sendTelegram(c.tgChatId, text.trim()); toast(`✅ Отправлено: ${esc(c.name)}`,'ok'); }
+  catch(e){ toast(`❌ Ошибка отправки: ${esc(e.message)}`,'err'); }
+}
+
+/* --- бейдж статуса и кнопки в карточке клиента --- */
+function tgStatusBadge(c){
+  return c.tgChatId
+    ? `<span class="badge text-bg-success" style="font-size:.6rem;vertical-align:middle"><i class="bi bi-telegram me-1"></i>подключён</span>`
+    : `<span class="badge text-bg-secondary" style="font-size:.6rem;vertical-align:middle"><i class="bi bi-telegram me-1"></i>не подключён</span>`;
+}
+function clientTgButtons(c){
+  const btns = [
+    `<button class="btn btn-sm btn-outline-info" onclick="genTgLink('${c.id}')"><i class="bi bi-link-45deg me-1"></i>Сгенерировать ссылку</button>`,
+    `<button class="btn btn-sm btn-outline-light" onclick="copyClientText('${c.id}')"><i class="bi bi-clipboard me-1"></i>Скопировать текст для клиента</button>`
+  ];
+  if(c.tgChatId) btns.push(`<button class="btn btn-sm btn-outline-success" onclick="manualSendTg('${c.id}')"><i class="bi bi-send me-1"></i>Написать</button>`);
+  return `<div class="d-flex justify-content-end gap-2 mt-2 flex-wrap">${btns.join('')}</div>`;
+}
+
+/* --- отправка уведомления клиенту (только Telegram, если подключён) --- */
+async function notifyClient(client, text){
+  if(!notify.tgToken || !client.tgChatId) return [];
+  try{ await sendTelegram(client.tgChatId, text); return ['Telegram']; }
+  catch(e){ console.warn('TG:', e.message); return []; }
+}
+
+/* --- шаблоны сообщений --- */
+function msgAppt1day(a){
+  const d = new Date(a.date+'T00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
+  return `🔔 Напоминание о записи\nЗдравствуйте, ${a.client}!\nЗавтра, ${d}${a.time?` в ${a.time}`:''}, вы записаны в ${SERVICE_NAME}.`
+    + (a.service?`\nУслуга: ${a.service}`:'') + (a.car?`\nАвто: ${a.car}`:'') + `\nЖдём вас!`;
+}
+function msgReady(a, c){
+  return `✅ Ваш автомобиль готов!\n${(c?c.name:a.client)}, работы${a.car?` по авто ${a.car}`:''} завершены — можете забирать.\n${SERVICE_NAME}`;
+}
+function msgServiceInvite(car){
+  return `⚠️ Приглашение на ТО\nПриближается плановое обслуживание вашего ${car.model}${car.plate?` (${car.plate})`:''} (пробег ~${fmt(car.mileage)} км).\nЗапишитесь в ${SERVICE_NAME} — будем рады помочь!`;
+}
+function ownerClient(car){
+  return clients.find(c => Array.isArray(c.carIds) && c.carIds.includes(car.id))
+      || clients.find(c => c.name===car.owner) || null;
+}
+
+/* --- автоматические уведомления --- */
+async function runAutoNotifications(){
+  if(!notify.tgToken) return;
+  const t = new Date(); t.setDate(t.getDate()+1);
+  const tomorrow = isoFrom(t.getFullYear(), t.getMonth(), t.getDate());
+  let changed = false;
+
+  // 1) За 1 день до записи
+  for(const a of appts){
+    if(a.status==='confirmed' && a.date===tomorrow && !a.notified1day){
+      const c = clients.find(x=>x.id===a.clientId);
+      if(c){ const sent = await notifyClient(c, msgAppt1day(a));
+        if(sent.length){ a.notified1day=true; changed=true; toast(`📨 Напоминание о записи: ${esc(c.name)}`,'ok'); } }
+    }
+  }
+  // 2) Приглашение на ТО (пробег приближается к интервалу)
+  for(const car of cars){
+    const m = Number(car.mileage)||0;
+    const dueOil = car.nextOilKm!=null && car.oilInterval && (car.nextOilKm-m)<=REMINDER_KM;
+    const dueTO  = car.nextTOKm!=null  && car.toInterval  && (car.nextTOKm-m) <=REMINDER_KM;
+    const key = `${car.nextOilKm}|${car.nextTOKm}`;
+    if((dueOil||dueTO) && car.notifiedServiceAt!==key){
+      const c = ownerClient(car);
+      if(c){ const sent = await notifyClient(c, msgServiceInvite(car));
+        if(sent.length){ car.notifiedServiceAt=key; changed=true; toast(`📨 Приглашение на ТО: ${esc(c.name)}`,'ok'); } }
+    }
+  }
+  if(changed) saveAll();
+}
+
+/* ====================== ПРАЙС-ЛИСТ ====================== */
+const SERVICE_CATS = ['ТО','Ремонт','Диагностика','Шиномонтаж','Кузовные','Электрика','Прочее'];
+function renderPricelist(){
+  const q=(document.getElementById('serviceSearch').value||'').toLowerCase().trim();
+  const list = services.filter(s=>!q || s.name.toLowerCase().includes(q) || (s.category||'').toLowerCase().includes(q));
+  const box=document.getElementById('pricelistList');
+  if(!list.length){ box.innerHTML=`<div class="text-center empty py-5"><i class="bi bi-tags fs-1 d-block mb-2"></i>${services.length?'Ничего не найдено':'Прайс-лист пуст. Нажмите «Добавить услугу».'}</div>`; return; }
+  box.innerHTML = list.map(s=>`
+    <div class="list-item p-3 d-flex justify-content-between align-items-center gap-2">
+      <div class="overflow-hidden">
+        <div class="fw-bold text-truncate">${esc(s.name)}</div>
+        <div class="small text-secondary">
+          ${s.category?`<span class="badge text-bg-secondary me-1">${esc(s.category)}</span>`:''}
+          <i class="bi bi-cash-coin me-1"></i>${money(s.price)} &nbsp;·&nbsp; <i class="bi bi-clock me-1"></i>${s.duration||0} мин
+        </div>
+      </div>
+      <div class="btn-group flex-shrink-0">
+        <button class="btn btn-outline-secondary" onclick="openServiceForm('${s.id}')"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-outline-danger" onclick="delService('${s.id}')"><i class="bi bi-trash3"></i></button>
+      </div>
+    </div>`).join('');
+}
+function openServiceForm(id){
+  const s = services.find(x=>x.id===id) || {};
+  document.getElementById('serviceCatList').innerHTML = SERVICE_CATS.map(c=>`<option value="${c}">`).join('');
+  document.getElementById('serviceModalTitle').textContent = id?'Редактировать услугу':'Новая услуга';
+  document.getElementById('serviceId').value = s.id||'';
+  document.getElementById('serviceName').value = s.name||'';
+  document.getElementById('servicePrice').value = (s.price!=null)?s.price:'';
+  document.getElementById('serviceDuration').value = (s.duration!=null)?s.duration:'';
+  document.getElementById('serviceCategory').value = s.category||'';
+  new bootstrap.Modal('#serviceModal').show();
+}
+function saveService(e){
+  e.preventDefault();
+  const id=document.getElementById('serviceId').value;
+  const data={name:document.getElementById('serviceName').value.trim(), price:numv(document.getElementById('servicePrice').value), duration:numv(document.getElementById('serviceDuration').value), category:document.getElementById('serviceCategory').value.trim()};
+  if(!data.name) return;
+  if(id){ Object.assign(services.find(x=>x.id===id), data); } else { services.unshift({id:uid(), ...data}); }
+  saveAll(); bootstrap.Modal.getInstance('#serviceModal').hide(); renderPricelist();
+}
+function delService(id){ if(confirm('Удалить услугу из прайса?')){ services=services.filter(x=>x.id!==id); supaDelete('services', id); saveAll(); renderPricelist(); } }
+
+/* ====================== ФИНАНСЫ ====================== */
+const EXPENSE_CATS = ['Запчасти','Аренда','Коммунальные','Реклама','Инструмент','Налоги','Прочее'];
+const dmy = iso => iso ? new Date(iso+'T00:00').toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '';
+let finPeriod = 'month';
+let chIncome = null, chExpense = null;
+
+function periodRange(p){
+  const now = new Date(), end = todayISO();
+  if(p==='day')  return {from:end, to:end};
+  if(p==='week'){ const d=new Date(); d.setDate(d.getDate()-6); return {from:isoFrom(d.getFullYear(),d.getMonth(),d.getDate()), to:end}; }
+  const y=now.getFullYear(), m=now.getMonth();
+  return {from:isoFrom(y,m,1), to:isoFrom(y,m,new Date(y,m+1,0).getDate())};
+}
+const inRange = (d, r) => d && d>=r.from && d<=r.to;
+function revenueInRange(r){
+  let s=0;
+  appts.forEach(a=>{ if(a.status==='done' && inRange(a.date,r)) s+=Number(a.price)||0; });
+  incomes.forEach(i=>{ if(inRange(i.date,r)) s+=Number(i.amount)||0; });
+  return s;
+}
+function expenseInRange(r){ let s=0; expenses.forEach(e=>{ if(inRange(e.date,r)) s+=Number(e.amount)||0; }); return s; }
+function salaryOf(rev){ return Math.round(rev*(Number(finance.salaryPercent)||0)/100); }
+
+function setFinPeriod(p){ finPeriod=p; renderFinance(); }
+function renderFinance(){
+  ['day','week','month'].forEach(p=>{
+    const b=document.getElementById('fp-'+p); if(!b) return;
+    b.classList.toggle('accent-btn', p===finPeriod);
+    b.classList.toggle('btn-outline-secondary', p!==finPeriod);
+  });
+  const r = periodRange(finPeriod);
+  const rev = revenueInRange(r), exp = expenseInRange(r), sal = salaryOf(rev);
+  document.getElementById('finRevenue').textContent = money(rev);
+  document.getElementById('finExpense').textContent = money(exp);
+  document.getElementById('finSalary').textContent  = money(sal);
+  document.getElementById('finProfit').textContent  = money(rev-exp-sal);
+  document.getElementById('salaryPercent').value = finance.salaryPercent;
+  renderIncomeList(r); renderExpenseList(r); renderFinanceCharts(r);
+}
+function setSalaryPercent(){ finance.salaryPercent = numv(document.getElementById('salaryPercent').value); saveAll(); renderFinance(); }
+
+function renderIncomeList(r){
+  const rows = [];
+  appts.forEach(a=>{ if(a.status==='done' && inRange(a.date,r) && (Number(a.price)||0)>0)
+    rows.push({date:a.date, amount:Number(a.price)||0, label:`Запись: ${a.client||''}${a.service?' — '+a.service:''}`, auto:true}); });
+  incomes.forEach(i=>{ if(inRange(i.date,r)) rows.push({date:i.date, amount:Number(i.amount)||0, label:i.note||'Доход', auto:false, id:i.id}); });
+  rows.sort((a,b)=> b.date.localeCompare(a.date));
+  const box=document.getElementById('incomeList');
+  if(!rows.length){ box.innerHTML='<div class="empty small text-center py-3">Нет доходов за период</div>'; return; }
+  box.innerHTML = rows.map(x=>`
+    <div class="list-item p-2 ps-3 d-flex justify-content-between align-items-center gap-2">
+      <div class="overflow-hidden">
+        <div class="text-truncate">${esc(x.label)} ${x.auto?'<span class="badge text-bg-dark ms-1" style="font-size:.6rem">авто</span>':''}</div>
+        <div class="small text-secondary">${dmy(x.date)}</div>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-shrink-0">
+        <span class="fw-bold text-success">${money(x.amount)}</span>
+        ${x.auto?'':`<button class="btn btn-sm btn-outline-danger" onclick="delIncome('${x.id}')"><i class="bi bi-trash3"></i></button>`}
+      </div>
+    </div>`).join('');
+}
+function renderExpenseList(r){
+  const rows = expenses.filter(e=>inRange(e.date,r)).sort((a,b)=>b.date.localeCompare(a.date));
+  const box=document.getElementById('expenseList');
+  if(!rows.length){ box.innerHTML='<div class="empty small text-center py-3">Нет расходов за период</div>'; return; }
+  box.innerHTML = rows.map(e=>`
+    <div class="list-item p-2 ps-3 d-flex justify-content-between align-items-center gap-2">
+      <div class="overflow-hidden">
+        <div class="text-truncate"><span class="badge text-bg-secondary me-1">${esc(e.category||'Прочее')}</span>${esc(e.note||'')}</div>
+        <div class="small text-secondary">${dmy(e.date)}</div>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-shrink-0">
+        <span class="fw-bold text-danger">−${money(e.amount)}</span>
+        <button class="btn btn-sm btn-outline-secondary" onclick="openExpenseForm('${e.id}')"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-sm btn-outline-danger" onclick="delExpense('${e.id}')"><i class="bi bi-trash3"></i></button>
+      </div>
+    </div>`).join('');
+}
+function renderFinanceCharts(r){
+  if(typeof Chart==='undefined') return;
+  Chart.defaults.color='#8b949e'; Chart.defaults.borderColor='#21262d';
+  // Доходы по дням
+  const perDay={};
+  appts.forEach(a=>{ if(a.status==='done' && inRange(a.date,r)) perDay[a.date]=(perDay[a.date]||0)+(Number(a.price)||0); });
+  incomes.forEach(i=>{ if(inRange(i.date,r)) perDay[i.date]=(perDay[i.date]||0)+(Number(i.amount)||0); });
+  const labels=[], data=[]; let d=new Date(r.from+'T00:00'); const end=new Date(r.to+'T00:00');
+  while(d<=end){ const iso=isoFrom(d.getFullYear(),d.getMonth(),d.getDate()); labels.push(iso.slice(8,10)+'.'+iso.slice(5,7)); data.push(perDay[iso]||0); d.setDate(d.getDate()+1); }
+  if(chIncome) chIncome.destroy();
+  chIncome = new Chart(document.getElementById('chartIncome'), {
+    type:'bar',
+    data:{labels, datasets:[{label:'Доход', data, backgroundColor:'#fb8500', borderRadius:6}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
+  });
+  // Структура расходов
+  const byCat={}; expenses.forEach(e=>{ if(inRange(e.date,r)){ const k=e.category||'Прочее'; byCat[k]=(byCat[k]||0)+(Number(e.amount)||0); } });
+  const cats=Object.keys(byCat), vals=cats.map(c=>byCat[c]);
+  const palette=['#fb8500','#ffb703','#e63946','#457b9d','#2a9d8f','#9b5de5','#8b949e'];
+  if(chExpense) chExpense.destroy();
+  chExpense = new Chart(document.getElementById('chartExpense'), {
+    type:'doughnut',
+    data:{labels:cats.length?cats:['Нет расходов'], datasets:[{data:cats.length?vals:[1], backgroundColor:cats.length?cats.map((_,i)=>palette[i%palette.length]):['#30363d'], borderWidth:0}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}}
+  });
+}
+
+/* доходы вручную */
+function openIncomeForm(){
+  document.getElementById('incomeId').value='';
+  document.getElementById('incomeDate').value=todayISO();
+  document.getElementById('incomeAmount').value='';
+  document.getElementById('incomeNote').value='';
+  new bootstrap.Modal('#incomeModal').show();
+}
+function saveIncome(e){
+  e.preventDefault();
+  const id=document.getElementById('incomeId').value;
+  const data={date:document.getElementById('incomeDate').value||todayISO(), amount:numv(document.getElementById('incomeAmount').value), note:document.getElementById('incomeNote').value.trim()};
+  if(id){ Object.assign(incomes.find(x=>x.id===id), data); } else { incomes.unshift({id:uid(), ...data}); }
+  saveAll(); bootstrap.Modal.getInstance('#incomeModal').hide(); renderFinance();
+}
+function delIncome(id){ if(confirm('Удалить доход?')){ incomes=incomes.filter(x=>x.id!==id); saveAll(); renderFinance(); } }
+
+/* расходы */
+function openExpenseForm(id){
+  const e=expenses.find(x=>x.id===id)||{};
+  const cats = EXPENSE_CATS.includes(e.category)||!e.category ? EXPENSE_CATS : EXPENSE_CATS.concat(e.category);
+  document.getElementById('expenseCat').innerHTML = cats.map(c=>`<option ${e.category===c?'selected':''}>${esc(c)}</option>`).join('');
+  document.getElementById('expenseId').value=e.id||'';
+  document.getElementById('expenseDate').value=e.date||todayISO();
+  document.getElementById('expenseAmount').value=(e.amount!=null)?e.amount:'';
+  document.getElementById('expenseNote').value=e.note||'';
+  new bootstrap.Modal('#expenseModal').show();
+}
+function saveExpense(e){
+  e.preventDefault();
+  const id=document.getElementById('expenseId').value;
+  const data={date:document.getElementById('expenseDate').value||todayISO(), amount:numv(document.getElementById('expenseAmount').value), category:document.getElementById('expenseCat').value, note:document.getElementById('expenseNote').value.trim()};
+  if(id){ Object.assign(expenses.find(x=>x.id===id), data); } else { expenses.unshift({id:uid(), ...data}); }
+  saveAll(); bootstrap.Modal.getInstance('#expenseModal').hide(); renderFinance();
+}
+function delExpense(id){ if(confirm('Удалить расход?')){ expenses=expenses.filter(x=>x.id!==id); supaDelete('expenses', id); saveAll(); renderFinance(); } }
+
+/* ====================== ОТЧЁТЫ ====================== */
+let repPeriod = 'month';
+function repRange(){
+  if(repPeriod==='all') return {from:'0000-00-00', to:'9999-99-99', label:'за всё время'};
+  if(repPeriod==='custom'){
+    const fv=document.getElementById('repFrom').value, tv=document.getElementById('repTo').value;
+    return {from:fv||'0000-00-00', to:tv||'9999-99-99', label:`${fv?dmy(fv):'…'} — ${tv?dmy(tv):'…'}`};
+  }
+  const r = periodRange(repPeriod);
+  return {from:r.from, to:r.to, label: repPeriod==='day'?'за сегодня':(repPeriod==='week'?'за 7 дней':'за месяц')};
+}
+function setRepPeriod(p){
+  repPeriod = p;
+  document.getElementById('repCustom').classList.toggle('d-none', p!=='custom');
+  renderReports();
+}
+function reportData(range){
+  const done = appts.filter(a=>a.status==='done' && inRange(a.date, range));
+  // загрузка мастеров: заказы / реальные минуты (из длительности услуг) / выручка
+  const byMaster={};
+  done.forEach(a=>{ const k=a.master||'(без мастера)'; (byMaster[k]=byMaster[k]||{orders:0,min:0,rev:0}); byMaster[k].orders++; byMaster[k].min+=Number(a.duration)||0; byMaster[k].rev+=Number(a.price)||0; });
+  const masterRows = Object.entries(byMaster).map(([name,v])=>({name, orders:v.orders, min:v.min, rev:v.rev})).sort((a,b)=>b.rev-a.rev);
+  // топ-5 услуг — по отдельным позициям записи
+  const byServ={};
+  done.forEach(a=>{ const items=(a.items&&a.items.length)?a.items:[{name:a.service||'(без услуги)', price:a.price||0}];
+    items.forEach(it=>{ const k=it.name||'(без услуги)'; (byServ[k]=byServ[k]||{count:0,rev:0}); byServ[k].count++; byServ[k].rev+=Number(it.price)||0; }); });
+  const topServ = Object.entries(byServ).map(([name,v])=>({name,...v})).sort((a,b)=>b.rev-a.rev).slice(0,5);
+  // ABC-анализ клиентов
+  const byClient={};
+  done.forEach(a=>{ const k=a.client||'(аноним)'; byClient[k]=(byClient[k]||0)+(Number(a.price)||0); });
+  const abc=Object.entries(byClient).map(([name,rev])=>({name,rev})).filter(x=>x.rev>0).sort((a,b)=>b.rev-a.rev);
+  const abcTotal=abc.reduce((s,x)=>s+x.rev,0); let cum=0;
+  abc.forEach(x=>{ cum+=x.rev; const sh=abcTotal?cum/abcTotal*100:0; x.cls=sh<=80?'A':(sh<=95?'B':'C'); x.share=abcTotal?x.rev/abcTotal*100:0; });
+  // прогноз на следующий месяц — по всей истории (не зависит от выбранного периода)
+  const byMonth={};
+  appts.forEach(a=>{ if(a.status==='done'){ const k=a.date.slice(0,7); byMonth[k]=(byMonth[k]||0)+(Number(a.price)||0); } });
+  incomes.forEach(i=>{ const k=i.date.slice(0,7); byMonth[k]=(byMonth[k]||0)+(Number(i.amount)||0); });
+  const cur=todayISO().slice(0,7); const full=Object.keys(byMonth).filter(m=>m!==cur).sort();
+  let forecast;
+  if(full.length){ const last=full.slice(-3); forecast=Math.round(last.reduce((s,m)=>s+byMonth[m],0)/last.length); }
+  else { const rev=byMonth[cur]||0; const now=new Date(); const dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(); forecast=Math.round(now.getDate()?rev/now.getDate()*dim:rev); }
+  return {masterRows, topServ, abc, abcTotal, forecast};
+}
+function renderReports(){
+  ['day','week','month','all','custom'].forEach(p=>{
+    const b=document.getElementById('rp-'+p); if(!b) return;
+    b.classList.toggle('accent-btn', p===repPeriod);
+    b.classList.toggle('btn-outline-secondary', p!==repPeriod);
+  });
+  const range = repRange();
+  const lbl=document.getElementById('repPeriodLabel'); if(lbl) lbl.textContent = 'Период: '+range.label;
+  const d = reportData(range);
+  const maxServ = Math.max(1, ...d.topServ.map(s=>s.rev));
+  document.getElementById('reportsContent').innerHTML = `
+    <div class="card p-3">
+      <div class="fw-bold mb-2"><i class="bi bi-person-badge me-1 accent-text"></i>Загрузка мастеров</div>
+      ${d.masterRows.length? d.masterRows.map(m=>`
+        <div class="list-item p-2 ps-3 d-flex justify-content-between align-items-center mb-2">
+          <div><div class="fw-semibold">${esc(m.name)}</div><div class="small text-secondary">${m.orders} заказ(ов) · ${durText(m.min)}</div></div>
+          <span class="fw-bold accent-text">${money(m.rev)}</span>
+        </div>`).join('') : '<div class="empty small">Нет завершённых записей за период</div>'}
+    </div>
+    <div class="card p-3">
+      <div class="fw-bold mb-2"><i class="bi bi-trophy me-1 accent-text"></i>Топ-5 услуг</div>
+      ${d.topServ.length? d.topServ.map(s=>`
+        <div class="mb-2">
+          <div class="d-flex justify-content-between small"><span>${esc(s.name)} <span class="text-secondary">×${s.count}</span></span><span class="fw-semibold">${money(s.rev)}</span></div>
+          <div class="progress mt-1" style="height:6px;background:#0d1117"><div class="progress-bar" style="width:${Math.round(s.rev/maxServ*100)}%;background:var(--accent)"></div></div>
+        </div>`).join('') : '<div class="empty small">Нет данных</div>'}
+    </div>
+    <div class="card p-3">
+      <div class="fw-bold mb-2"><i class="bi bi-diagram-3 me-1 accent-text"></i>ABC-анализ клиентов</div>
+      <div class="small text-secondary mb-2">A — формируют до 80% выручки, B — следующие 15%, C — остальные 5%.</div>
+      ${d.abc.length? d.abc.map(c=>{
+        const cls={A:'text-bg-success',B:'text-bg-warning',C:'text-bg-secondary'}[c.cls];
+        return `<div class="list-item p-2 ps-3 d-flex justify-content-between align-items-center mb-2">
+          <div><span class="badge ${cls} me-2">${c.cls}</span>${esc(c.name)}</div>
+          <div class="text-end"><div class="fw-bold">${money(c.rev)}</div><div class="small text-secondary">${c.share.toFixed(1)}%</div></div>
+        </div>`; }).join('') : '<div class="empty small">Нет данных</div>'}
+    </div>
+    <div class="card p-3">
+      <div class="fw-bold mb-2"><i class="bi bi-graph-up-arrow me-1 accent-text"></i>Прогноз выручки на следующий месяц</div>
+      <div class="fw-bold accent-text" style="font-size:1.8rem">${money(d.forecast)}</div>
+      <div class="small text-secondary">Оценка по средней выручке прошлых месяцев (или по текущему темпу, если истории мало). Не зависит от выбранного периода.</div>
+    </div>`;
+}
+function exportExcel(){
+  if(typeof XLSX==='undefined'){ toast('⚠️ Библиотека Excel не загрузилась (нужен интернет)','err'); return; }
+  const range = repRange();
+  const d = reportData(range);
+  const wb = XLSX.utils.book_new();
+  const s1=[['Мастер','Заказов','Минут','Часы','Выручка, ₽'], ...d.masterRows.map(m=>[m.name,m.orders,m.min,Math.round(m.min/60*10)/10,m.rev])];
+  const s2=[['Услуга','Кол-во','Выручка, ₽'], ...d.topServ.map(s=>[s.name,s.count,s.rev])];
+  const s3=[['Клиент','Класс','Выручка, ₽','Доля, %'], ...d.abc.map(c=>[c.name,c.cls,c.rev,Number(c.share.toFixed(1))])];
+  const s4=[['Показатель','Значение'], ['Период отчёта', range.label], ['Прогноз выручки на след. месяц, ₽', d.forecast], ['Дата отчёта', todayISO()]];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s1), 'Загрузка мастеров');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s2), 'Топ услуг');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s3), 'ABC клиенты');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s4), 'Прогноз');
+  XLSX.writeFile(wb, `Отчет_автосервис_${todayISO()}.xlsx`);
+  toast('✅ Отчёт экспортирован в Excel','ok');
+}
+
+/* ====================== СБРОС ====================== */
+function resetData(){
+  if(confirm('Удалить ВСЕ данные (клиенты, записи, авто, мастера)? Токен Telegram сохранится. Действие необратимо.')){
+    ['clients','appointments','cars','masters','incomes','expenses','services','init'].forEach(k=>localStorage.removeItem('asl_'+k));
+    clients=[]; appts=[]; cars=[]; masters=['Алексей Смирнов','Дмитрий Орлов','Виктор Кузьмин']; incomes=[]; expenses=[]; services=[]; saveAll();
+    renderHome(); renderClients(); renderAppointments(); renderCalendar(); renderCars();
+  }
+}
+
+/* ====================== СТАРТ ====================== */
+async function boot(){
+  // 1) Основной кэш — IndexedDB (мгновенный офлайн-старт)
+  let cached = await idbLoadState();
+  const firstRun = !cached && !localStorage.getItem('asl_init');
+  if(cached){ applyState(cached); }
+  else if(firstRun){ seedDemo(); localStorage.setItem('asl_init','1'); }
+  // (если кэша нет, но asl_init есть — данные уже подняты из localStorage синхронно сверху)
+  migrate();
+  mirrorLocal(); idbSaveState();
+
+  go('home');
+
+  // 2) Первый запуск без облака — предложить подключить Supabase
+  if(firstRun && !supaConfigured()){ try{ new bootstrap.Modal('#firstRunModal').show(); }catch(e){} }
+
+  // 3) Загрузка свежих данных из облака при старте
+  if(supaConfigured() && navigator.onLine){ await forceSync(true); }
+
+  // 4) Telegram + авто-уведомления
+  if(notify.tgToken){ try{ await syncTelegramUpdates(true); }catch(e){} }
+  runAutoNotifications();
+}
+boot();
+
+/* ====================== PWA: service worker + установка ====================== */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('Service worker зарегистрирован'))
+      .catch(err => console.warn('Service worker не зарегистрирован:', err));
+  });
+}
+// кнопка «Установить приложение» (появляется, когда браузер готов предложить установку)
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if(document.getElementById('installBtn')) return;
+  const btn = document.createElement('button');
+  btn.id = 'installBtn';
+  btn.className = 'btn accent-btn';
+  btn.style.cssText = 'position:fixed;right:16px;bottom:90px;z-index:1900;box-shadow:0 6px 20px rgba(0,0,0,.4)';
+  btn.innerHTML = '<i class="bi bi-download me-1"></i>Установить';
+  btn.onclick = async () => {
+    btn.remove();
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  };
+  document.body.appendChild(btn);
+});
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  const b = document.getElementById('installBtn'); if(b) b.remove();
+  if(typeof toast === 'function') toast('✅ Приложение установлено','ok');
+});
+</script>
+</body>
+</html>

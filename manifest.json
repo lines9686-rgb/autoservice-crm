@@ -1,0 +1,26 @@
+{
+  "id": "autoservice-lite",
+  "name": "Автосервис Lite CRM",
+  "short_name": "Автосервис",
+  "description": "CRM для автосервиса: клиенты, записи, автомобили, прайс-лист, финансы и отчёты.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='110'%20fill='rgb(251,133,0)'/%3E%3Ctext%20x='256'%20y='370'%20font-size='300'%20text-anchor='middle'%3E%F0%9F%9A%97%3C/text%3E%3C/svg%3E", "sizes": "72x72",   "type": "image/svg+xml", "purpose": "any" },
+    { "src": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='110'%20fill='rgb(251,133,0)'/%3E%3Ctext%20x='256'%20y='370'%20font-size='300'%20text-anchor='middle'%3E%F0%9F%9A%97%3C/text%3E%3C/svg%3E", "sizes": "96x96",   "type": "image/svg+xml", "purpose": "any" },
+    { "src": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='110'%20fill='rgb(251,133,0)'/%3E%3Ctext%20x='256'%20y='370'%20font-size='300'%20text-anchor='middle'%3E%F0%9F%9A%97%3C/text%3E%3C/svg%3E", "sizes": "128x128", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='110'%20fill='rgb(251,133,0)'/%3E%3Ctext%20x='256'%20y='370'%20font-size='300'%20text-anchor='middle'%3E%F0%9F%9A%97%3C/text%3E%3C/svg%3E", "sizes": "144x144", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='110'%20fill='rgb(251,133,0)'/%3E%3Ctext%20x='256'%20y='370'%20font-size='300'%20text-anchor='middle'%3E%F0%9F%9A%97%3C/text%3E%3C/svg%3E", "sizes": "152x152", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='110'%20fill='rgb(251,133,0)'/%3E%3Ctext%20x='256'%20y='370'%20font-size='300'%20text-anchor='middle'%3E%F0%9F%9A%97%3C/text%3E%3C/svg%3E", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='110'%20fill='rgb(251,133,0)'/%3E%3Ctext%20x='256'%20y='370'%20font-size='300'%20text-anchor='middle'%3E%F0%9F%9A%97%3C/text%3E%3C/svg%3E", "sizes": "384x384", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='110'%20fill='rgb(251,133,0)'/%3E%3Ctext%20x='256'%20y='370'%20font-size='300'%20text-anchor='middle'%3E%F0%9F%9A%97%3C/text%3E%3C/svg%3E", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20fill='rgb(251,133,0)'/%3E%3Ctext%20x='256'%20y='360'%20font-size='260'%20text-anchor='middle'%3E%F0%9F%9A%97%3C/text%3E%3C/svg%3E", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
